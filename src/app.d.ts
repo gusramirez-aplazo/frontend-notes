@@ -9,7 +9,6 @@ declare global {
 			env?: {
 				API_BASE_URL: string;
 			};
-			caches: CacheStorage & { default: Cache };
 		}
 	}
 }
