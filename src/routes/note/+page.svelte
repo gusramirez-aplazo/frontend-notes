@@ -1,6 +1,8 @@
 <script lang="ts">
 	/** @type {import('./$types').PageData} */
-	export let data: { subjects: any[]; categories: any[] };
+	export let data: { subjects: any[]; categories: any[] } = { subjects: [], categories: [] };
+	console.log(data);
+
 	$: subjects = data.subjects;
 	$: categories = data.categories;
 </script>

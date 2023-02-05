@@ -1,7 +1,8 @@
-/** @type {import('./$types').PageServerLoad} */
-export async function load({ fetch, platform }: { fetch: any; platform: any }) {
-	const baseUrl = platform?.env?.API_BASE_URL ?? 'http://localhost:3000';
+import { env } from '$env/dynamic/private';
+import type { PageServerLoad } from './$types';
 
+export const load: PageServerLoad = async () => {
+	const baseUrl = env.API_BASE_URL || 'http://localhost:3000';
 	const resp = await Promise.allSettled([
 		getItemsByType('subject', baseUrl),
 		getItemsByType('category', baseUrl)
@@ -10,7 +11,11 @@ export async function load({ fetch, platform }: { fetch: any; platform: any }) {
 	const [subjects, categories] = resp
 		.map((singleResp) => {
 			if (singleResp.status === 'fulfilled') {
-				return singleResp.value;
+				return {
+					error: false,
+					success: true,
+					content: Array.isArray(singleResp.value.content) ? singleResp.value : []
+				};
 			}
 			return {
 				success: false,
@@ -29,7 +34,7 @@ export async function load({ fetch, platform }: { fetch: any; platform: any }) {
 		subjects,
 		categories
 	};
-}
+};
 
 const getItemsByType = (type: string, baseUrl: string) => {
 	return fetch(`${baseUrl}/api/v1/${type}`)
