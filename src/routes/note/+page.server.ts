@@ -1,8 +1,11 @@
 import { env } from '$env/dynamic/private';
 import type { PageServerLoad } from './$types';
+import type { CommonResponseContent } from '../../interfaces/common-response-content';
+import type { ApiResponse } from '../../interfaces/api-response';
 
 export const load: PageServerLoad = async () => {
 	const baseUrl = env.API_BASE_URL || 'http://localhost:3000';
+
 	const resp = await Promise.allSettled([
 		getItemsByType('subject', baseUrl),
 		getItemsByType('category', baseUrl)
@@ -11,11 +14,7 @@ export const load: PageServerLoad = async () => {
 	const [subjects, categories] = resp
 		.map((singleResp) => {
 			if (singleResp.status === 'fulfilled') {
-				return {
-					error: false,
-					success: true,
-					content: Array.isArray(singleResp.value.content) ? singleResp.value : []
-				};
+				return singleResp.value;
 			}
 			return {
 				success: false,
@@ -37,7 +36,7 @@ export const load: PageServerLoad = async () => {
 };
 
 const getItemsByType = (type: string, baseUrl: string) => {
-	return fetch(`${baseUrl}/api/v1/${type}`)
-		.then((res) => res.json())
-		.then((data) => data);
+	return fetch(`${baseUrl}/api/v1/${type}`).then(
+		(res) => res.json() as Promise<ApiResponse<CommonResponseContent[]>>
+	);
 };
