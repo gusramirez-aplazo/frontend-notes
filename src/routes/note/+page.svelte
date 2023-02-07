@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { debounce } from '../../infra/shared/debounce';
+	import type { ApiResponse } from '../../interfaces/api-response';
+
 	/** @type {import('./$types').PageData} */
 	export let data: {
 		subjects: CommonResponseContent[];
@@ -18,11 +21,21 @@
 	let filteredSubjects = data.subjects;
 	let selectedSubjects: CommonResponseContent[] = [];
 
-	const categorySelection = (name: string) => {
+	const createCategory = (name: string): Promise<ApiResponse<CommonResponseContent>> => {
+		return fetch('/api/category', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify({ name })
+		}).then((res) => res.json());
+	};
+
+	const categorySelection = debounce(() => {
 		if (!selectedCategory) {
 			return;
 		}
-		const selection = filteredCategories?.find((item) => item.name === name);
+		const selection = filteredCategories?.find((item) => item.name === selectedCategory);
 
 		if (selection) {
 			selectedCategories = [...selectedCategories, selection];
@@ -32,8 +45,38 @@
 					(cat) => !selectedCategories.some((sel) => sel.categoryId === cat.categoryId)
 				)
 			];
+			return;
 		}
-	};
+
+		createCategory(selectedCategory)
+			.then((createCategoryResponse) => {
+				if (createCategoryResponse.success) {
+					const newCategory: CommonResponseContent = {
+						categoryId: createCategoryResponse.content.categoryId,
+						name: createCategoryResponse.content.name,
+						createdAt: createCategoryResponse.content.createdAt,
+						description: createCategoryResponse.content.description
+					};
+
+					selectedCategories = [...selectedCategories, newCategory];
+					selectedCategory = '';
+
+					data.categories = [...data.categories, newCategory];
+
+					filteredCategories = [
+						...data.categories.filter(
+							(cat) => !selectedCategories.some((sel) => sel.categoryId === cat.categoryId)
+						)
+					];
+				} else {
+					throw Error(createCategoryResponse.error);
+				}
+			})
+			.catch((e) => {
+				console.warn(e);
+				alert('Error creating category');
+			});
+	}, 350);
 
 	const subjectsSelection = (name: string) => {
 		if (!selectedSubject) {
@@ -52,10 +95,7 @@
 		}
 	};
 
-	$: categorySelection(selectedCategory);
 	$: subjectsSelection(selectedSubject);
-
-	console.log({ selectedCategories });
 </script>
 
 <div class="container">
@@ -90,6 +130,7 @@
 						id="category"
 						autocomplete="off"
 						bind:value={selectedCategory}
+						on:change={categorySelection}
 					/>
 
 					<datalist id="datalist-categories">

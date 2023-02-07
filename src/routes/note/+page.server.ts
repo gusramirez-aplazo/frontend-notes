@@ -35,8 +35,23 @@ export const load: PageServerLoad = async () => {
 	};
 };
 
-const getItemsByType = (type: string, baseUrl: string) => {
-	return fetch(`${baseUrl}/api/v1/${type}`).then(
-		(res) => res.json() as Promise<ApiResponse<CommonResponseContent[]>>
-	);
+const getItemsByType = (
+	type: string,
+	baseUrl: string
+): Promise<ApiResponse<CommonResponseContent[]>> => {
+	if (!baseUrl) {
+		throw new Error('No Base Url for get categories and subjects provided');
+	}
+
+	return fetch(`${baseUrl}/api/v1/${type}`)
+		.then((res) => res.json() as Promise<ApiResponse<CommonResponseContent[]>>)
+		.catch((err) => {
+			console.error(err);
+
+			return {
+				success: false,
+				error: err.message ? err.message : err,
+				content: []
+			};
+		});
 };
