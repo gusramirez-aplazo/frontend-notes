@@ -1,7 +1,6 @@
 export class CommonResponseContent {
-	[key: string]: string | number | undefined;
+	id: number;
 	name: string;
-	description: string;
 	createdAt?: string;
 	updatedAt?: string;
 	deletedAt?: string;
