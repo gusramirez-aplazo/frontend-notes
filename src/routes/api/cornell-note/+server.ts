@@ -7,8 +7,8 @@ import type { CommonResponseContent } from '../../../interfaces/common-response-
 
 const baseUrl = env.API_BASE_URL || 'http://localhost:3000';
 
-export const POST = async (event: RequestEvent): Promise<Response> => {
-	const body = await event.request.json();
+export const POST = async ({ request, fetch }: RequestEvent): Promise<Response> => {
+	const body = await request.json();
 
 	try {
 		const resp = await fetch(`${baseUrl}/api/v1/cornell`, {

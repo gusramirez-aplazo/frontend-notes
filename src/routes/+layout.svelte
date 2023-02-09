@@ -1,3 +1,21 @@
+<script lang="ts">
+	import { toastr } from '$lib/store/toastr';
+	import Toastr from '$lib/ui/toastr.svelte';
+
+	export let content: {
+		title: string;
+		message: string;
+		type?: 'success' | 'error' | 'warning' | 'info';
+		isShown?: boolean;
+	};
+
+	toastr.subscribe((toastr) => {
+		if (toastr) {
+			content = toastr;
+		}
+	});
+</script>
+
 <svelte:head>
 	<style>
 		:root {
@@ -46,6 +64,7 @@
 	</style>
 </svelte:head>
 
+<Toastr />
 <div class="container">
 	<slot />
 </div>

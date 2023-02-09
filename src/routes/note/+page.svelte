@@ -1,127 +1,95 @@
 <script lang="ts">
-	import type { PageData, ActionData } from './$types';
-	import type { CommonResponseContent } from '../../interfaces/common-response-content';
-
-	import { createGroupingContent } from './createGroupingContent';
-	import type { ReactiveData } from './category';
-	import { applyAction, deserialize } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
-	import type { ActionResult } from '@sveltejs/kit';
+	import { category } from '$lib/store/categories';
+	import { subject } from '$lib/store/subjects';
+	import { toastr } from '$lib/store/toastr';
+	import Category from '$lib/ui/category.svelte';
+	import Subject from '$lib/ui/subject.svelte';
 
-	export let form: ActionData;
+	import type { PageData } from './$types';
+	import type { ApiResponse } from '../../interfaces/api-response';
+	import type { CommonResponseContent } from '../../interfaces/common-response-content';
 
 	export let data: PageData = {
 		subjects: [],
 		categories: []
 	};
 
-	let category: ReactiveData = {
-		currentSelection: '',
-		filteredItems: data.categories,
-		selectedItems: []
+	let localCategory: {
+		selection: CommonResponseContent[];
+		items: CommonResponseContent[];
+	} = {
+		selection: [],
+		items: []
 	};
 
-	let subject: ReactiveData = {
-		currentSelection: '',
-		filteredItems: data.subjects,
-		selectedItems: []
+	let localSubject: {
+		selection: CommonResponseContent[];
+		items: CommonResponseContent[];
+	} = {
+		selection: [],
+		items: []
 	};
 
-	const categorySelection = () => {
-		if (!category.currentSelection) {
-			return;
-		}
-		const selection = category.filteredItems.find(
-			(item) => item.name === category.currentSelection
-		);
+	category.subscribe((value) => {
+		localCategory = value;
+	});
 
-		if (selection) {
-			category.selectedItems = [...category.selectedItems, selection];
-			category.currentSelection = '';
-			category.filteredItems = [
-				...category.filteredItems.filter(
-					(cat) => !category.selectedItems.some((sel) => sel.id === cat.id)
-				)
-			];
-			return;
-		}
+	category.set({
+		selection: [],
+		items: data.categories
+	});
 
-		createGroupingContent('category', category.currentSelection)
-			.then((createCategoryResponse) => {
-				if (createCategoryResponse.success) {
-					const newCategory: CommonResponseContent = {
-						id: createCategoryResponse.content.id,
-						name: createCategoryResponse.content.name,
-						createdAt: createCategoryResponse.content.createdAt
-					};
+	subject.subscribe((value) => {
+		localSubject = value;
+	});
 
-					category.selectedItems = [...category.selectedItems, newCategory];
-					category.currentSelection = '';
-
-					data.categories = [...data.categories, newCategory];
-
-					category.filteredItems = [
-						...data.categories.filter(
-							(cat) => !category.selectedItems.some((sel) => sel.id === cat.id)
-						)
-					];
-				} else {
-					throw Error(createCategoryResponse.error);
-				}
-			})
-			.catch((e) => {
-				console.warn(e);
-				alert('Error creating category');
-			});
-	};
-	const subjectSelection = () => {
-		if (!subject.currentSelection) {
-			return;
-		}
-		const selection = subject.filteredItems.find((item) => item.name === subject.currentSelection);
-
-		if (selection) {
-			subject.selectedItems = [...subject.selectedItems, selection];
-			subject.currentSelection = '';
-			subject.filteredItems = [
-				...subject.filteredItems.filter(
-					(cat) => !subject.selectedItems.some((sel) => sel.id === cat.id)
-				)
-			];
-			return;
-		}
-
-		createGroupingContent('subject', subject.currentSelection)
-			.then((createCategoryResponse) => {
-				if (createCategoryResponse.success) {
-					const newCategory: CommonResponseContent = {
-						id: createCategoryResponse.content.id,
-						name: createCategoryResponse.content.name,
-						createdAt: createCategoryResponse.content.createdAt
-					};
-
-					subject.selectedItems = [...subject.selectedItems, newCategory];
-					subject.currentSelection = '';
-
-					data.categories = [...data.categories, newCategory];
-
-					subject.filteredItems = [
-						...data.categories.filter(
-							(cat) => !subject.selectedItems.some((sel) => sel.id === cat.id)
-						)
-					];
-				} else {
-					throw Error(createCategoryResponse.error);
-				}
-			})
-			.catch((e) => {
-				console.warn(e);
-				alert('Error creating subject');
-			});
-	};
+	subject.set({
+		selection: [],
+		items: data.subjects
+	});
 
 	async function handleSubmit(this: any, event: Event) {
-		const data = new FormData(this);
+		const formData = new FormData(this);
+
+		if (!formData.get('topic')) {
+			toastr.update((val) => {
+				return {
+					...val,
+					title: 'Error',
+					message: 'Please enter a title',
+					type: 'error',
+					isShown: true
+				};
+			});
+			return;
+		}
+
+		if (localCategory.selection.length === 0) {
+			toastr.update((val) => {
+				return {
+					...val,
+					title: 'Ups',
+					message: 'Add at least one category',
+					type: 'error',
+					isShown: true
+				};
+			});
+			return;
+		}
+
+		if (localSubject.selection.length === 0) {
+			toastr.update((val) => {
+				return {
+					...val,
+					title: 'Ups',
+					message: 'Add at least one subject',
+					type: 'error',
+					isShown: true
+				};
+			});
+			return;
+		}
 
 		const resp = await fetch('/api/cornell-note', {
 			method: 'POST',
@@ -129,26 +97,58 @@
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				topic: data.get('topic'),
-				categories: category.selectedItems,
-				subjects: subject.selectedItems
+				topic: formData.get('topic'),
+				categories: localCategory.selection,
+				subjects: localSubject.selection
 			})
 		});
 
-		const result: ActionResult = await resp.json();
+		const result: ApiResponse<CommonResponseContent> = await resp.json();
 
-		if (result.type === 'success') {
-			// re-run all `load` functions, following the successful update
-			await invalidateAll();
+		if (!result.success) {
+			toastr.update((val) => {
+				return {
+					...val,
+					title: 'Error',
+					message: result.error,
+					type: 'error',
+					isShown: true
+				};
+			});
+			return;
 		}
 
-		applyAction(result);
+		toastr.update((val) => {
+			return {
+				...val,
+				title: 'Success',
+				message: 'Note created',
+				type: 'success',
+				isShown: true
+			};
+		});
+
+		await invalidateAll();
+
+		category.set({
+			selection: [],
+			items: data.categories
+		});
+		subject.set({
+			selection: [],
+			items: data.subjects
+		});
+		this.reset();
 	}
 </script>
 
 <div class="container">
 	<main class="note-main">
-		<form class="note-form" method="POST" on:submit|preventDefault={handleSubmit}>
+		<Category />
+
+		<Subject />
+
+		<form class="note-form" on:submit|preventDefault={handleSubmit}>
 			<div class="note-form--header">
 				<h1 class="note-form--title">New note</h1>
 			</div>
@@ -157,67 +157,6 @@
 				<div class="form-group">
 					<label for="note-title" class="form-input--label">Title</label>
 					<input type="text" class="form-input" id="note-title" name="topic" />
-				</div>
-
-				<div class="form-group">
-					<div>
-						<span>Selected Categories</span>
-						<ul>
-							{#each category.selectedItems as selection}
-								<li>
-									{selection.name}
-								</li>
-							{/each}
-						</ul>
-					</div>
-					<label for="category" class="form-input--label">Categories</label>
-					<input
-						type="text"
-						list="datalist-categories"
-						class="form-input"
-						id="category"
-						name="category"
-						autocomplete="off"
-						bind:value={category.currentSelection}
-						on:change={categorySelection}
-					/>
-
-					<datalist id="datalist-categories">
-						{#each category.filteredItems as cat}
-							<option value={cat.name} />
-						{/each}
-					</datalist>
-				</div>
-
-				<div class="form-group">
-					<div>
-						<span>Selected Subjects</span>
-						<ul>
-							{#each subject.selectedItems as selection}
-								<li>
-									{selection.name}
-								</li>
-							{/each}
-						</ul>
-					</div>
-
-					<label for="subject" class="form-input--label">Subjects</label>
-					<input
-						type="text"
-						class="form-input"
-						id="subject"
-						list="datalist-subjects"
-						name="subject"
-						autocomplete="off"
-						bind:value={subject.currentSelection}
-						on:change={subjectSelection}
-					/>
-
-					<datalist id="datalist-subjects">
-						{#each subject.filteredItems as sub}
-							<option value={sub.name} />
-						{/each}
-					</datalist>
 				</div>
 
 				<div class="form-group">
