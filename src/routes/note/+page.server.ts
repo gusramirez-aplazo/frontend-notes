@@ -1,57 +1,33 @@
 import { env } from '$env/dynamic/private';
+import { retrieveCategories } from '$lib/modules/category/services/category-api-adapter.service';
 import type { PageServerLoad } from './$types';
-import type { CommonResponseContent } from '../../interfaces/common-response-content';
-import type { ApiResponse } from '../../interfaces/api-response';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ fetch }) => {
 	const baseUrl = env.API_BASE_URL || 'http://localhost:3000';
 
-	const resp = await Promise.allSettled([
-		getItemsByType('subject', baseUrl),
-		getItemsByType('category', baseUrl)
-	]);
+	const resp = await Promise.allSettled([retrieveCategories(fetch, baseUrl)]);
 
-	const [subjects, categories] = resp
-		.map((singleResp) => {
-			if (singleResp.status === 'fulfilled') {
-				return singleResp.value;
-			}
+	const [categoriesResponse] = resp.map((resp) => {
+		if (resp.status !== 'fulfilled') {
 			return {
 				success: false,
-				error: singleResp.status,
+				message: resp.status,
 				content: []
 			};
-		})
-		.map((response) => {
-			if (response.success) {
-				return response.content;
-			}
-			return [];
-		});
+		}
+
+		if (resp.value.success) {
+			return resp.value;
+		}
+
+		return {
+			success: false,
+			message: resp.value.message,
+			content: []
+		};
+	});
 
 	return {
-		subjects,
-		categories
+		...categoriesResponse
 	};
-};
-
-const getItemsByType = (
-	type: string,
-	baseUrl: string
-): Promise<ApiResponse<CommonResponseContent[]>> => {
-	if (!baseUrl) {
-		throw new Error('No Base Url for get categories and subjects provided');
-	}
-
-	return fetch(`${baseUrl}/api/v1/${type}`)
-		.then((res) => res.json() as Promise<ApiResponse<CommonResponseContent[]>>)
-		.catch((err) => {
-			console.error(err);
-
-			return {
-				success: false,
-				error: err.message ? err.message : err,
-				content: []
-			};
-		});
 };

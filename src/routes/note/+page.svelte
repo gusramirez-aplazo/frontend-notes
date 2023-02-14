@@ -1,173 +1,49 @@
 <script lang="ts">
-	import { invalidateAll } from '$app/navigation';
-	import { category } from '$lib/store/categories';
-	import { subject } from '$lib/store/subjects';
-	import { toastr } from '$lib/store/toastr';
-	import Category from '$lib/ui/category.svelte';
-	import Subject from '$lib/ui/subject.svelte';
-
 	import type { PageData } from './$types';
-	import type { ApiResponse } from '../../interfaces/api-response';
-	import type { CommonResponseContent } from '../../interfaces/common-response-content';
+	import { ToastrService } from '$lib/modules/notifier/services/tostr-store.service';
+	import { CategoryStoreService } from '$lib/modules/category/services/category-store.service';
+	import Subject from '$lib/modules/subject/components/subject.svelte';
+	import Category from '$lib/modules/category/components/category.svelte';
 
-	export let data: PageData = {
-		subjects: [],
-		categories: []
-	};
+	export let data: PageData;
 
-	let localCategory: {
-		selection: CommonResponseContent[];
-		items: CommonResponseContent[];
-	} = {
-		selection: [],
-		items: []
-	};
+	CategoryStoreService.setInitialLoad([...data.content]);
 
-	let localSubject: {
-		selection: CommonResponseContent[];
-		items: CommonResponseContent[];
-	} = {
-		selection: [],
-		items: []
-	};
+	if (!data.success) {
+		ToastrService.error('Ups!', 'Error en la carga de categorias');
+	}
 
-	category.subscribe((value) => {
-		localCategory = value;
-	});
+	const createCategory = (event: CustomEvent) => {
+		console.log(event.detail.name);
 
-	category.set({
-		selection: [],
-		items: data.categories
-	});
-
-	subject.subscribe((value) => {
-		localSubject = value;
-	});
-
-	subject.set({
-		selection: [],
-		items: data.subjects
-	});
-
-	async function handleSubmit(this: any, event: Event) {
-		const formData = new FormData(this);
-
-		if (!formData.get('topic')) {
-			toastr.update((val) => {
-				return {
-					...val,
-					title: 'Error',
-					message: 'Please enter a title',
-					type: 'error',
-					isShown: true
-				};
-			});
-			return;
-		}
-
-		if (localCategory.selection.length === 0) {
-			toastr.update((val) => {
-				return {
-					...val,
-					title: 'Ups',
-					message: 'Add at least one category',
-					type: 'error',
-					isShown: true
-				};
-			});
-			return;
-		}
-
-		if (localSubject.selection.length === 0) {
-			toastr.update((val) => {
-				return {
-					...val,
-					title: 'Ups',
-					message: 'Add at least one subject',
-					type: 'error',
-					isShown: true
-				};
-			});
-			return;
-		}
-
-		const resp = await fetch('/api/cornell-note', {
+		fetch('/api/category', {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
 			body: JSON.stringify({
-				topic: formData.get('topic'),
-				categories: localCategory.selection,
-				subjects: localSubject.selection
+				name: event.detail.name
 			})
-		});
+		})
+			.then((res) => res.json())
+			.then((data) => {
+				console.log(data);
+				if (data.success) {
+					CategoryStoreService.setNewSelectedCategory(data.content);
+					ToastrService.success('Genial!', 'Categoria creada');
+					return;
+				}
 
-		const result: ApiResponse<CommonResponseContent> = await resp.json();
-
-		if (!result.success) {
-			toastr.update((val) => {
-				return {
-					...val,
-					title: 'Error',
-					message: result.error,
-					type: 'error',
-					isShown: true
-				};
+				ToastrService.error('Ups!', 'Error en la creacion de la categoria');
+			})
+			.catch((err) => {
+				console.log(err);
+				ToastrService.error('Ups!', 'Error en la creacion de la categoria');
 			});
-			return;
-		}
-
-		toastr.update((val) => {
-			return {
-				...val,
-				title: 'Success',
-				message: 'Note created',
-				type: 'success',
-				isShown: true
-			};
-		});
-
-		await invalidateAll();
-
-		category.set({
-			selection: [],
-			items: data.categories
-		});
-		subject.set({
-			selection: [],
-			items: data.subjects
-		});
-		this.reset();
-	}
+	};
 </script>
 
-<div class="container">
-	<main class="note-main">
-		<Category />
-
-		<Subject />
-
-		<form class="note-form" on:submit|preventDefault={handleSubmit}>
-			<div class="note-form--header">
-				<h1 class="note-form--title">New note</h1>
-			</div>
-
-			<div class="note-form--body">
-				<div class="form-group">
-					<label for="note-title" class="form-input--label">Title</label>
-					<input type="text" class="form-input" id="note-title" name="topic" />
-				</div>
-
-				<div class="form-group">
-					<label for="note-content" class="form-input--label">Content</label>
-					<textarea class="form-textarea" id="note-content" />
-				</div>
-			</div>
-
-			<div class="note-form--footer">
-				<button type="submit" class="note-form--footer--button">Save</button>
-			</div>
-		</form>
-	</main>
-</div>
+<main class="pt-4">
+	<Category on:newCategory={createCategory} />
+	<Subject />
+</main>

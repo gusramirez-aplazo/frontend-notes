@@ -1,5 +1,5 @@
 export class ApiResponse<T> {
 	content: T;
-	error: string;
+	message: string;
 	success: boolean;
 }

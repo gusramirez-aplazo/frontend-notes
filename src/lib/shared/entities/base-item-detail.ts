@@ -1,4 +1,4 @@
-export class CommonResponseContent {
+export class BaseItemDetail {
 	id: number;
 	name: string;
 	createdAt?: string;
