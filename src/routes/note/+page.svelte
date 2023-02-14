@@ -14,8 +14,6 @@
 	}
 
 	const createCategory = (event: CustomEvent) => {
-		console.log(event.detail.name);
-
 		fetch('/api/category', {
 			method: 'POST',
 			headers: {
@@ -27,7 +25,6 @@
 		})
 			.then((res) => res.json())
 			.then((data) => {
-				console.log(data);
 				if (data.success) {
 					CategoryStoreService.setNewSelectedCategory(data.content);
 					ToastrService.success('Genial!', 'Categoria creada');
