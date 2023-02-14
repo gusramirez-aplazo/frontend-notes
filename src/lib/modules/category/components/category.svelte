@@ -26,6 +26,9 @@
 		dispatch('newCategory', {
 			name: formData.get('category')
 		});
+
+		this.reset();
+		isModalOpen = false;
 	}
 
 	function selectCategory(category: BaseItemDetail) {
@@ -56,7 +59,7 @@
 	{/each}
 </ButtonGroup>
 
-<Modal bind:open={isModalOpen} size="xs" autoclose>
+<Modal bind:open={isModalOpen} size="xs" autoclose={false}>
 	<form
 		class="flex flex-col space-y-6"
 		on:submit|preventDefault={createCategory}
