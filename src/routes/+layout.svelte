@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
 	import Toastr from '$lib/modules/notifier/components/toastr.svelte';
 	import '../app.css';
 </script>
