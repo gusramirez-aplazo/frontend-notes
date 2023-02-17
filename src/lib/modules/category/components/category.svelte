@@ -3,8 +3,8 @@
 	import { ButtonGroup, Button, Modal, Label, Input } from 'flowbite-svelte';
 
 	import { categories } from '$lib/modules/category/store/categories';
-	import { CategoryStoreService } from '../services/category-store.service';
 	import { ToastrService } from '$lib/modules/notifier/services/tostr-store.service';
+	import { CategoryStoreService } from '$lib/modules/category/services/category-store.service';
 
 	import type { CategoryStore } from '../entities';
 	import type { BaseItemDetail } from '$lib/shared/entities/base-item-detail';
@@ -34,9 +34,11 @@
 	};
 </script>
 
-<div class="overflow-x-auto pb-2">
-	<ButtonGroup class="space-x-px max-w-full ">
+<div class="overflow-x-auto pb-2 relative flex w-full">
+	<span class="sticky inline-flex top-0 left-0 bg-white pr-2">
 		<Button outline color="dark" on:click={openModal}>+</Button>
+	</span>
+	<ButtonGroup class="space-x-px max-w-full pl-1">
 		{#each componentCategories.retrievedCategories as category}
 			<Button
 				gradient={componentCategories?.selected?.id === category.id}
@@ -47,7 +49,9 @@
 				class="capitalize"
 				on:click={() => selectCategory(category)}
 			>
-				{category.name}
+				<span class="whitespace-nowrap">
+					{category.name}
+				</span>
 			</Button>
 		{/each}
 	</ButtonGroup>
