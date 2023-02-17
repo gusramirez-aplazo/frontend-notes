@@ -18,6 +18,7 @@
 
 {#if content?.isShown}
 	<Alert
+		class="fixed top-1 right-1 w-fit max-w-xs"
 		color={content.currentColor ?? ''}
 		on:close={ToastrService.closeToastr}
 		dismissable
