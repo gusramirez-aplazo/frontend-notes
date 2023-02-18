@@ -1,10 +1,9 @@
 import { writable } from 'svelte/store';
-import type { CommonResponseContent } from '../../../../interfaces/common-response-content';
+import type { SubjectStore } from '../entities';
 
-export const subject = writable<{
-	selection: CommonResponseContent[];
-	items: CommonResponseContent[];
-}>({
-	selection: [],
-	items: []
-});
+const initialState: SubjectStore = {
+	selected: [],
+	retrieved: []
+};
+
+export const subjects = writable<SubjectStore>(initialState);
