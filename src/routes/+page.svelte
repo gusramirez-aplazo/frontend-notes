@@ -1,42 +1,48 @@
-<div class="container">
-	<header class="principal-header">
-		<div class="principal-header--brand">
-			<div class="principal-header--logo">img.main-logo</div>
-			<h4 class="principal-header--path">Community mode</h4>
-		</div>
+<script>
+	import LinkIcon from '$lib/shared/components/link-icon.svelte';
+	import { Button, Card } from 'flowbite-svelte';
+</script>
 
-		<nav class="principal-nav">
-			<ul class="principal-nav--items">
-				<li class="principal-nav--item">
-					<button class="principal-nav--link"> Login </button>
-				</li>
-			</ul>
-		</nav>
-	</header>
-
-	<main class="principal">
-		<section class="principal-card">
-			<header class="principal-card--header">
-				<h1 class="principal-card--title">Notes</h1>
-			</header>
-
-			<article class="principal-card--body">
-				<header class="body-header">
-					<h2 class="body-title">Notebook</h2>
-				</header>
-
-				<div class="body-search">
-					<label for="search-input" class="search-label"> Find topics </label>
-					<input type="text" class="search-input" id="search-input" />
-				</div>
-
-				<div class="principal-card--actions">
-					<button class="principal-card--action-button"> Take a tour </button>
-					<a href="/note" class="principal-card--action-button">
-						Start to write
-					</a>
-				</div>
+<main class="flex flex-col w-full min-h-screen items-center pt-12">
+	<section class="min-h-[450px]">
+		<Card class="">
+			<article class="mb-10 flex flex-col items-center">
+				<h5
+					class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"
+				>
+					Simple Cornell Notes
+				</h5>
+				<p
+					class="mb-3 font-normal text-gray-700 dark:text-gray-400 leading-tight"
+				>
+					Take advantage of the Cornell Notes method to take notes and organize
+					your thoughts.
+				</p>
+				<a
+					href="/note"
+					class="inline-flex items-center text-blue-600 dark:text-blue-300 hover:underline"
+				>
+					Start to write
+					<LinkIcon />
+				</a>
 			</article>
-		</section>
-	</main>
-</div>
+
+			<article class="mb-10 flex flex-col items-center">
+				<h6
+					class="mb-2 text-lg font-bold tracking-tight text-gray-900 dark:text-white"
+				>
+					Search for notes
+				</h6>
+
+				<form>
+					<input
+						type="text"
+						class="w-full px-4 py-2 mb-3 text-gray-700 bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+						placeholder="Search for notes"
+					/>
+					<Button type="submit" color="blue" class="w-full">Search</Button>
+				</form>
+			</article>
+		</Card>
+	</section>
+</main>

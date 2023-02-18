@@ -1,13 +1,21 @@
 <script lang="ts">
-	import { applyAction, enhance } from '$app/forms';
-	import { ButtonGroup, Button, Modal, Label, Input } from 'flowbite-svelte';
+	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
+	import {
+		ButtonGroup,
+		Button,
+		Modal,
+		Label,
+		Input,
+		Helper
+	} from 'flowbite-svelte';
+
+	import AddIcon from '$lib/shared/components/add-icon.svelte';
 
 	import { categories } from '$lib/modules/category/store/categories';
 	import { ToastrService } from '$lib/modules/notifier/services/tostr-store.service';
 	import { CategoryStoreService } from '$lib/modules/category/services/category-store.service';
 
 	import type { CategoryStore } from '../entities';
-	import type { BaseItemDetail } from '$lib/shared/entities/base-item-detail';
 	import type { ActionData } from '../../../../routes/note/$types';
 
 	export let form: ActionData;
@@ -19,24 +27,33 @@
 		componentCategories = value;
 	});
 
-	const selectCategory = (category: BaseItemDetail) => {
-		CategoryStoreService.setNewSelectedCategory(category);
-	};
+	const createCategory: SubmitFunction = ({ form }) => {
+		return async ({ result, update }) => {
+			if (result.type === 'failure') {
+				await applyAction(result);
+			}
 
-	const openModal = () => {
-		isModalOpen = true;
-	};
+			if (result.type === 'success') {
+				form.reset();
+				CategoryStoreService.setNewSelectedCategory(
+					result.data?.formContent.response
+				);
+				ToastrService.success('Success!', 'Category created');
+				isModalOpen = false;
+			}
 
-	const closeModalOnSuccess = (category: BaseItemDetail) => {
-		CategoryStoreService.setNewSelectedCategory(category);
-		ToastrService.success('Success!', 'Category created');
-		isModalOpen = false;
+			update();
+		};
 	};
 </script>
 
 <div class="overflow-x-auto pb-2 relative flex w-full">
-	<span class="sticky inline-flex top-0 left-0 bg-white pr-2">
-		<Button outline color="dark" on:click={openModal}>+</Button>
+	<span
+		class="sticky inline-flex top-0 left-0 bg-white dark:bg-gray-800 pr-2 z-30"
+	>
+		<Button outline color="dark" on:click={() => (isModalOpen = true)}>
+			<AddIcon />
+		</Button>
 	</span>
 	<ButtonGroup class="space-x-px max-w-full pl-1">
 		{#each componentCategories.retrievedCategories as category}
@@ -47,7 +64,7 @@
 					? 'purpleToBlue'
 					: 'dark'}
 				class="capitalize"
-				on:click={() => selectCategory(category)}
+				on:click={() => CategoryStoreService.setNewSelectedCategory(category)}
 			>
 				<span class="whitespace-nowrap">
 					{category.name}
@@ -62,20 +79,7 @@
 		class="flex flex-col space-y-6"
 		method="post"
 		action="?/createCategory"
-		use:enhance={({ form }) => {
-			return async ({ result, update }) => {
-				if (result.type === 'failure') {
-					await applyAction(result);
-				}
-
-				if (result.type === 'success') {
-					form.reset();
-					closeModalOnSuccess(result.data?.formContent.response);
-				}
-
-				update();
-			};
-		}}
+		use:enhance={createCategory}
 	>
 		<Label
 			class="text-xl font-medium text-gray-900 dark:text-white p-0 space-y-2"
@@ -88,9 +92,9 @@
 				value={form?.formContent?.category ?? ''}
 			/>
 			{#if form?.error}
-				<p class="text-red-500 text-sm">
+				<Helper class="mt-2" color="red">
 					{form?.error?.message}
-				</p>
+				</Helper>
 			{/if}
 		</Label>
 

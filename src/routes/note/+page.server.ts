@@ -7,6 +7,7 @@ import type { ApiResponse } from '$lib/shared/entities/api-response';
 import type { PageServerLoad } from './$types';
 
 const baseUrl = env.API_BASE_URL;
+console.log('Base Url: ', baseUrl);
 
 const httpClient = axios.create({
 	baseURL: baseUrl,
@@ -15,15 +16,19 @@ const httpClient = axios.create({
 	}
 });
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = (async () => {
 	const resp = await Promise.allSettled([
 		httpClient<ApiResponse<BaseItemDetail[]>>({
 			url: '/api/v1/category',
 			method: 'GET'
+		}),
+		httpClient<ApiResponse<BaseItemDetail[]>>({
+			url: '/api/v1/subject',
+			method: 'GET'
 		})
 	]);
 
-	const [categoriesResponse] = resp.map((resp) => {
+	const [categoriesResponse, subjectsResponse] = resp.map((resp) => {
 		if (resp.status !== 'fulfilled') {
 			return {
 				success: false,
@@ -44,9 +49,10 @@ export const load: PageServerLoad = async () => {
 	});
 
 	return {
-		...categoriesResponse
+		categoriesResponse,
+		subjectsResponse
 	};
-};
+}) satisfies PageServerLoad;
 
 export const actions: Actions = {
 	createCategory: async (event: RequestEvent) => {

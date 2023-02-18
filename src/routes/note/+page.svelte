@@ -9,10 +9,13 @@
 	export let data: PageData;
 	export let form: ActionData;
 
-	CategoryStoreService.setInitialLoad([...data.content]);
+	CategoryStoreService.setInitialLoad([...data.categoriesResponse.content]);
 
-	if (!data.success) {
+	if (!data.categoriesResponse.success) {
 		ToastrService.error('Ups!', "Can't retrieve categories");
+	}
+	if (!data.subjectsResponse.success) {
+		ToastrService.error('Ups!', "Can't retrieve subjects");
 	}
 </script>
 
