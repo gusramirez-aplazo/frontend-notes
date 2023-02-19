@@ -28,7 +28,8 @@ export const load: PageServerLoad = (async () => {
 	]);
 
 	const [categoriesResponse, subjectsResponse] = settledResponse.map((resp) => {
-		if (resp.status !== 'fulfilled') {
+		if (resp.status === 'rejected') {
+			console.log('rejected', resp.reason);
 			return {
 				success: false,
 				message: "can't get data",
