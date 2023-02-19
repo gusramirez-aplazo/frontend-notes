@@ -31,7 +31,7 @@ export const load: PageServerLoad = (async () => {
 		if (resp.status !== 'fulfilled') {
 			return {
 				success: false,
-				message: resp.reason,
+				message: "can't get data",
 				content: []
 			};
 		}
