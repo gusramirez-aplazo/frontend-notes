@@ -7,7 +7,6 @@ import type { ApiResponse } from '$lib/shared/entities/api-response';
 import type { PageServerLoad } from './$types';
 
 const baseUrl = env.API_BASE_URL;
-console.log('Base Url: ', baseUrl);
 
 const httpClient = axios.create({
 	baseURL: baseUrl,
@@ -37,13 +36,23 @@ export const load: PageServerLoad = (async () => {
 			};
 		}
 
-		if (resp.value.data.success) {
-			return resp.value.data;
+		const response = { ...resp?.value?.data };
+
+		if (!response) {
+			return {
+				success: false,
+				message: 'Empty response',
+				content: []
+			};
+		}
+
+		if (response.success) {
+			return response;
 		}
 
 		return {
 			success: false,
-			message: resp.value.data.message,
+			message: response.message,
 			content: []
 		};
 	});
