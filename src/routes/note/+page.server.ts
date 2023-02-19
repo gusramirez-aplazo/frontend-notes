@@ -16,7 +16,7 @@ const httpClient = axios.create({
 });
 
 export const load: PageServerLoad = (async () => {
-	const resp = await Promise.allSettled([
+	const settledResponse = await Promise.allSettled([
 		httpClient<ApiResponse<BaseItemDetail[]>>({
 			url: '/api/v1/category',
 			method: 'GET'
@@ -27,7 +27,7 @@ export const load: PageServerLoad = (async () => {
 		})
 	]);
 
-	const [categoriesResponse, subjectsResponse] = resp.map((resp) => {
+	const [categoriesResponse, subjectsResponse] = settledResponse.map((resp) => {
 		if (resp.status !== 'fulfilled') {
 			return {
 				success: false,
@@ -96,7 +96,7 @@ export const actions: Actions = {
 				throw new Error(response.statusText);
 			}
 
-			const data = response.data as ApiResponse<BaseItemDetail>;
+			const data = { ...response.data } satisfies ApiResponse<BaseItemDetail>;
 
 			return {
 				success: true,
