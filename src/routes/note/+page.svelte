@@ -9,6 +9,8 @@
 	export let data: PageData;
 	export let form: ActionData;
 
+	$: console.log(data);
+
 	CategoryStoreService.setInitialLoad([...data.categoriesResponse.content]);
 
 	if (!data.categoriesResponse.success) {
