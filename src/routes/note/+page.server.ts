@@ -6,7 +6,7 @@ import type { PageServerLoad } from './$types';
 
 const baseUrl = env.API_BASE_URL;
 
-export const load: PageServerLoad = (async ({ fetch }) => {
+export const load: PageServerLoad = async ({ fetch }) => {
 	const settledResponse = await Promise.allSettled([
 		fetch(`${baseUrl}/api/v1/category`, {
 			method: 'GET',
@@ -60,34 +60,35 @@ export const load: PageServerLoad = (async ({ fetch }) => {
 		categoriesResponse,
 		subjectsResponse
 	};
-}) satisfies PageServerLoad;
+};
 
 export const actions: Actions = {
 	createCategory: async (event: RequestEvent) => {
-		if (!baseUrl) {
-			throw new Error('No Base Url for create category');
-		}
-
 		const formData = await event.request.formData();
 
-		const category = formData.get('category')?.toString() ?? '';
-
-		if (!category) {
-			return fail(400, {
-				success: false,
-				formContent: { category },
-				error: { message: 'Category is required' }
-			});
-		}
+		const category =
+			formData.get('category')?.toString().trim().toLowerCase() ?? '';
 
 		try {
+			if (!baseUrl) {
+				throw new Error('No Base Url for create category');
+			}
+
+			if (!category) {
+				return fail(400, {
+					success: false,
+					formContent: { inputValue: category },
+					error: { message: 'Category is required' }
+				});
+			}
+
 			const fetchedResponse = await event.fetch(`${baseUrl}/api/v1/category`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
 				body: JSON.stringify({
-					name: category.trim().toLowerCase()
+					name: category
 				})
 			});
 
@@ -99,14 +100,14 @@ export const actions: Actions = {
 			if (!validStatus) {
 				return fail(400, {
 					success: false,
-					formContent: { category },
+					formContent: { inputValue: category },
 					error: { message: response.message }
 				});
 			}
 
 			return {
 				success: true,
-				formContent: { category: '', response: response.content },
+				formContent: { inputValue: '', response: response.content },
 				error: null
 			};
 		} catch (error: any) {
@@ -114,9 +115,69 @@ export const actions: Actions = {
 
 			return fail(500, {
 				success: false,
-				formContent: { category },
+				formContent: { inputValue: category },
 				error: {
 					message: error?.response?.data?.message ?? 'Error creating category'
+				}
+			});
+		}
+	},
+
+	createSubject: async (event: RequestEvent) => {
+		const formData = await event.request.formData();
+
+		const subject =
+			formData.get('subject')?.toString().trim().toLowerCase() ?? '';
+
+		try {
+			if (!baseUrl) {
+				throw new Error('No Base Url for create subject');
+			}
+
+			if (!subject) {
+				return fail(400, {
+					success: false,
+					formContent: { inputValue: subject },
+					error: { message: 'Subject is required' }
+				});
+			}
+
+			const fetchedResponse = await event.fetch(`${baseUrl}/api/v1/subject`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					name: subject
+				})
+			});
+
+			const response =
+				(await fetchedResponse.json()) as ApiResponse<BaseItemDetail>;
+
+			const validStatus = response.success === true;
+
+			if (!validStatus) {
+				return fail(400, {
+					success: false,
+					formContent: { inputValue: subject },
+					error: { message: response.message }
+				});
+			}
+
+			return {
+				success: true,
+				formContent: { inputValue: '', response: response.content },
+				error: null
+			};
+		} catch (error: any) {
+			console.error(error.response.data);
+
+			return fail(500, {
+				success: false,
+				formContent: { inputValue: subject },
+				error: {
+					message: error?.response?.data?.message ?? 'Error creating subject'
 				}
 			});
 		}

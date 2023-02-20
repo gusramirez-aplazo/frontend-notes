@@ -88,8 +88,7 @@
 			<Input
 				type="text"
 				name="category"
-				placeholder="..."
-				value={form?.formContent?.category ?? ''}
+				value={form?.formContent?.inputValue ?? ''}
 			/>
 			{#if form?.error}
 				<Helper class="mt-2" color="red">

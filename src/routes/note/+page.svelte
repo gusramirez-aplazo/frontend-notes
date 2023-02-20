@@ -5,13 +5,13 @@
 	import { CategoryStoreService } from '$lib/modules/category/services/category-store.service';
 	import Subject from '$lib/modules/subject/components/subject.svelte';
 	import Category from '$lib/modules/category/components/category.svelte';
+	import { SubjectStoreService } from '$lib/modules/subject/services/subject-store.service';
 
 	export let data: PageData;
 	export let form: ActionData;
 
-	$: console.log(data);
-
 	CategoryStoreService.setInitialLoad([...data.categoriesResponse.content]);
+	SubjectStoreService.setInitialLoad([...data.subjectsResponse.content]);
 
 	if (!data.categoriesResponse.success) {
 		ToastrService.error('Ups!', "Can't retrieve categories");
@@ -28,6 +28,6 @@
 <main class="pt-4">
 	<Card padding="md" size="md">
 		<Category {form} />
-		<Subject />
+		<Subject {form} />
 	</Card>
 </main>

@@ -21,6 +21,31 @@ const setNewSelectedSubject = (subject: BaseItemDetail) => {
 	});
 };
 
+const removeSelectedSubject = (subject: BaseItemDetail) => {
+	subjects.update((val) => {
+		const selected = [...val.selected];
+		const retrieved = [...val.retrieved];
+
+		const findedIndex = selected.findIndex((item) => item.id === subject.id);
+
+		if (findedIndex === -1) {
+			return {
+				selected,
+				retrieved
+			};
+		}
+
+		selected.splice(findedIndex, 1);
+
+		return {
+			selected,
+			retrieved
+		};
+	});
+};
+
+const getFromRetrieved = (name: string) => {};
+
 const setInitialLoad = (items: BaseItemDetail[]) => {
 	subjects.set({
 		selected: [],
@@ -30,6 +55,7 @@ const setInitialLoad = (items: BaseItemDetail[]) => {
 
 const _subjectStoreService = {
 	setNewSelectedSubject,
+	removeSelectedSubject,
 	setInitialLoad
 };
 
