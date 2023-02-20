@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 import { env } from '$env/dynamic/private';
 import { fail, type Actions, type RequestEvent } from '@sveltejs/kit';
 import type { BaseItemDetail } from '$lib/shared/entities/base-item-detail';
@@ -8,36 +6,36 @@ import type { PageServerLoad } from './$types';
 
 const baseUrl = env.API_BASE_URL;
 
-const httpClient = axios.create({
-	baseURL: baseUrl,
-	headers: {
-		'Content-Type': 'application/json'
-	}
-});
-
-export const load: PageServerLoad = (async () => {
+export const load: PageServerLoad = (async ({ fetch }) => {
 	const settledResponse = await Promise.allSettled([
-		httpClient<ApiResponse<BaseItemDetail[]>>({
-			url: '/api/v1/category',
-			method: 'GET'
-		}),
-		httpClient<ApiResponse<BaseItemDetail[]>>({
-			url: '/api/v1/subject',
-			method: 'GET'
-		})
+		fetch(`${baseUrl}/api/v1/category`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		}).then((response) => response.json()) as Promise<
+			ApiResponse<BaseItemDetail[]>
+		>,
+		fetch(`${baseUrl}/api/v1/subject`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json'
+			}
+		}).then((response) => response.json()) as Promise<
+			ApiResponse<BaseItemDetail[]>
+		>
 	]);
 
 	const [categoriesResponse, subjectsResponse] = settledResponse.map((resp) => {
 		if (resp.status === 'rejected') {
-			console.log('rejected', resp.reason);
 			return {
 				success: false,
-				message: "can't get data",
+				message: "can't retrieve data",
 				content: []
 			};
 		}
 
-		const response = { ...resp?.value?.data };
+		const response = { ...resp?.value };
 
 		if (!response) {
 			return {
@@ -83,25 +81,32 @@ export const actions: Actions = {
 		}
 
 		try {
-			const response = await httpClient({
-				url: '/api/v1/category',
+			const fetchedResponse = await event.fetch(`${baseUrl}/api/v1/category`, {
 				method: 'POST',
-				data: {
-					name: category
-				}
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					name: category.trim().toLowerCase()
+				})
 			});
 
-			const validStatus = response.status >= 200 && response.status < 300;
+			const response =
+				(await fetchedResponse.json()) as ApiResponse<BaseItemDetail>;
+
+			const validStatus = response.success === true;
 
 			if (!validStatus) {
-				throw new Error(response.statusText);
+				return fail(400, {
+					success: false,
+					formContent: { category },
+					error: { message: response.message }
+				});
 			}
-
-			const data = { ...response.data } satisfies ApiResponse<BaseItemDetail>;
 
 			return {
 				success: true,
-				formContent: { category: '', response: data.content },
+				formContent: { category: '', response: response.content },
 				error: null
 			};
 		} catch (error: any) {
