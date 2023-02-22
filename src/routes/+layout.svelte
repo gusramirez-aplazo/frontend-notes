@@ -1,5 +1,5 @@
 <script>
-	import Toastr from '$lib/modules/notifier/components/toastr.svelte';
+	import Toastr from '$lib/modules/notifier/components/notifier.svelte';
 	import { DarkMode, Navbar, NavBrand } from 'flowbite-svelte';
 	import '../app.css';
 </script>
