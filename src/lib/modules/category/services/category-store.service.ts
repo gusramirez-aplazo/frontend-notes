@@ -1,39 +1,63 @@
 import type { BaseItemDetail } from '$lib/shared/entities/base-item-detail';
+import type { Writable } from 'svelte/store';
 import { categories } from '../store/categories';
+import type { CategoryStore } from '../entities';
 
-const setNewSelectedCategory = (category: BaseItemDetail) => {
-	categories.update((val) => {
-		const selected = category;
-		const retrieved = [...val.retrievedCategories];
+export type CategoryStoreServiceType = {
+	categories: Writable<CategoryStore>;
+	setNewSelectedCategory: (category: BaseItemDetail) => void;
+	setInitialLoad: (items: BaseItemDetail[]) => void;
+};
 
-		const findedIndex = retrieved.findIndex((item) => item.id === category.id);
+class CategoryStoreService implements CategoryStoreServiceType {
+	private readonly _categories = categories;
 
-		if (findedIndex === -1) {
+	public get categories() {
+		return this._categories;
+	}
+
+	public setNewSelectedCategory(category: BaseItemDetail): void {
+		this._categories.update((val) => {
+			const selected = category;
+			const retrieved = [...val.retrievedCategories];
+
+			const findedIndex = retrieved.findIndex(
+				(item) => item.id === category.id
+			);
+
+			if (findedIndex === -1) {
+				return {
+					selected,
+					retrievedCategories: [...retrieved, category]
+				};
+			}
+
 			return {
 				selected,
-				retrievedCategories: [...retrieved, category]
+				retrievedCategories: retrieved
 			};
-		}
+		});
+	}
+	public setInitialLoad(items: BaseItemDetail[]) {
+		const uncategorized = items.find((item) => item.name === 'uncategorized');
 
-		return {
-			selected,
-			retrievedCategories: retrieved
-		};
-	});
-};
+		this._categories.set({
+			selected: uncategorized ?? null,
+			retrievedCategories: items
+		});
+	}
+}
 
-const setInitialLoad = (items: BaseItemDetail[]) => {
-	const uncategorized = items.find((item) => item.name === 'uncategorized');
+const _categoryStoreService = new CategoryStoreService();
 
-	categories.set({
-		selected: uncategorized ?? null,
-		retrievedCategories: items
-	});
-};
-
-const _categoryStoreService = {
-	setNewSelectedCategory,
-	setInitialLoad
-};
-
-export const CategoryStoreService = Object.freeze(_categoryStoreService);
+export const categoryStoreService = Object.freeze(_categoryStoreService);
+/**
+ * custom runtime error
+ * store service exposed variables and methods for category
+ * deliver a contract for the store service
+ * instead of do all the logic in the component do a usecase
+ * and in there receive all the services that needs to be used
+ * from within the component only call the usecase
+ * and inject the dependencies
+ *
+ */

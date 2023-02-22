@@ -2,7 +2,7 @@
 	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
 	import { Badge, Helper, Tooltip } from 'flowbite-svelte';
 	import { subjects } from '$lib/modules/subject/store/subjects';
-	import { ToastrService } from '$lib/modules/notifier/services/tostr-store.service';
+	import { notifierService } from '$lib/modules/notifier/services/tostr-store.service';
 	import { SubjectStoreService } from '$lib/modules/subject/services/subject-store.service';
 	import CloseIcon from '$lib/shared/components/close-icon.svelte';
 
@@ -35,7 +35,7 @@
 				SubjectStoreService.setNewSelectedSubject(
 					result.data?.formContent.response
 				);
-				ToastrService.success('Success!', 'Category created');
+				notifierService.success('Success!', 'Category created');
 			}
 
 			update();

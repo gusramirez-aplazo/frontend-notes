@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Alert } from 'flowbite-svelte';
 	import { toastr } from '$lib/modules/notifier/store/toastr';
-	import { ToastrService } from '../services/tostr-store.service';
+	import { notifierService } from '../services/tostr-store.service';
 
 	import type { ToastrConfig } from '../entities';
 
@@ -20,7 +20,7 @@
 	<Alert
 		class="fixed top-1 right-1 w-fit max-w-xs"
 		color={content.currentColor ?? ''}
-		on:close={ToastrService.closeToastr}
+		on:close={notifierService.closeToastr}
 		dismissable
 	>
 		<span slot="icon">

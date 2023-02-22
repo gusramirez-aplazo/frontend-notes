@@ -1,23 +1,23 @@
 <script lang="ts">
 	import { Card } from 'flowbite-svelte';
 	import type { ActionData, PageData } from './$types';
-	import { ToastrService } from '$lib/modules/notifier/services/tostr-store.service';
-	import { CategoryStoreService } from '$lib/modules/category/services/category-store.service';
+	import { notifierService } from '$lib/modules/notifier/services/tostr-store.service';
 	import Subject from '$lib/modules/subject/components/subject.svelte';
 	import Category from '$lib/modules/category/components/category.svelte';
 	import { SubjectStoreService } from '$lib/modules/subject/services/subject-store.service';
+	import { categoryStoreService } from '$lib/modules/category/services/category-store.service';
 
 	export let data: PageData;
 	export let form: ActionData;
 
-	CategoryStoreService.setInitialLoad([...data.categoriesResponse.content]);
+	categoryStoreService.setInitialLoad([...data.categoriesResponse.content]);
 	SubjectStoreService.setInitialLoad([...data.subjectsResponse.content]);
 
 	if (!data.categoriesResponse.success) {
-		ToastrService.error('Ups!', "Can't retrieve categories");
+		notifierService.error('Ups!', "Can't retrieve categories");
 	}
 	if (!data.subjectsResponse.success) {
-		ToastrService.error('Ups!', "Can't retrieve subjects");
+		notifierService.error('Ups!', "Can't retrieve subjects");
 	}
 </script>
 
@@ -27,7 +27,7 @@
 
 <main class="pt-4">
 	<Card padding="md" size="md">
-		<Category {form} />
+		<Category />
 		<Subject {form} />
 	</Card>
 </main>

@@ -1,9 +1,19 @@
 import { toastr } from '$lib/modules/notifier/store/toastr';
 import { ToastrConfig } from '../entities';
 
-export class ToastrService {
-	static closeToastr(): void {
-		toastr.update((val) => {
+export type NotifierServiceType = {
+	closeToastr: () => void;
+	success: (title: string, message: string) => void;
+	error: (title: string, message: string) => void;
+	warning: (title: string, message: string) => void;
+	info: (title: string, message: string) => void;
+};
+
+class NotifierService implements NotifierServiceType {
+	private readonly _toastr = toastr;
+
+	public closeToastr(): void {
+		this._toastr.update((val) => {
 			const config = ToastrConfig.create({
 				title: val.title,
 				message: val.message,
@@ -15,7 +25,7 @@ export class ToastrService {
 		});
 	}
 
-	static success(title: string, message: string): void {
+	public success(title: string, message: string): void {
 		const config = ToastrConfig.create({
 			title,
 			message,
@@ -23,9 +33,9 @@ export class ToastrService {
 			type: 'success'
 		});
 
-		toastr.set(config);
+		this._toastr.set(config);
 	}
-	static error(title: string, message: string): void {
+	public error(title: string, message: string): void {
 		const config = ToastrConfig.create({
 			title,
 			message,
@@ -33,9 +43,9 @@ export class ToastrService {
 			type: 'error'
 		});
 
-		toastr.set(config);
+		this._toastr.set(config);
 	}
-	static warning(title: string, message: string): void {
+	public warning(title: string, message: string): void {
 		const config = ToastrConfig.create({
 			title,
 			message,
@@ -43,9 +53,9 @@ export class ToastrService {
 			type: 'warning'
 		});
 
-		toastr.set(config);
+		this._toastr.set(config);
 	}
-	static info(title: string, message: string): void {
+	public info(title: string, message: string): void {
 		const config = ToastrConfig.create({
 			title,
 			message,
@@ -53,6 +63,8 @@ export class ToastrService {
 			type: 'info'
 		});
 
-		toastr.set(config);
+		this._toastr.set(config);
 	}
 }
+
+export const notifierService = new NotifierService();

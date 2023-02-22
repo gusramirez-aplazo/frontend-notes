@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
 	import {
 		ButtonGroup,
 		Button,
@@ -10,41 +9,40 @@
 	} from 'flowbite-svelte';
 
 	import AddIcon from '$lib/shared/components/add-icon.svelte';
+	import BitoneButton from '$lib/shared/components/bitone-button.svelte';
 
-	import { categories } from '$lib/modules/category/store/categories';
-	import { ToastrService } from '$lib/modules/notifier/services/tostr-store.service';
-	import { CategoryStoreService } from '$lib/modules/category/services/category-store.service';
+	import { notifierService } from '$lib/modules/notifier/services/tostr-store.service';
+	import { categoryStoreService } from '$lib/modules/category/services/category-store.service';
 
 	import type { CategoryStore } from '../entities';
-	import type { ActionData } from '../../../../routes/note/$types';
-
-	export let form: ActionData;
+	import { createCategoryUsecase } from '../usecases/create-category.usecase';
+	import { categoryHttpClientService } from '../services/http-category.service';
 
 	let componentCategories: CategoryStore;
 	let isModalOpen = false;
+	let formError = '';
 
-	categories.subscribe((value) => {
+	categoryStoreService.categories.subscribe((value) => {
 		componentCategories = value;
 	});
 
-	const createCategory: SubmitFunction = ({ form }) => {
-		return async ({ result, update }) => {
-			if (result.type === 'failure') {
-				await applyAction(result);
-			}
+	const createOneUsecase = createCategoryUsecase(
+		categoryHttpClientService,
+		categoryStoreService,
+		notifierService
+	);
 
-			if (result.type === 'success') {
-				form.reset();
-				CategoryStoreService.setNewSelectedCategory(
-					result.data?.formContent.response
-				);
-				ToastrService.success('Success!', 'Category created');
+	function createCategory(this: HTMLFormElement) {
+		createOneUsecase
+			.execute(this)
+			.then(() => {
 				isModalOpen = false;
-			}
-
-			update();
-		};
-	};
+				formError = '';
+			})
+			.catch((error) => {
+				formError = error.message;
+			});
+	}
 </script>
 
 <div class="overflow-x-auto pb-2 relative flex w-full">
@@ -57,19 +55,12 @@
 	</span>
 	<ButtonGroup class="space-x-px max-w-full pl-1">
 		{#each componentCategories.retrievedCategories as category}
-			<Button
-				gradient={componentCategories?.selected?.id === category.id}
-				outline={componentCategories?.selected?.id !== category.id}
-				color={componentCategories?.selected?.id === category.id
-					? 'purpleToBlue'
-					: 'dark'}
-				class="capitalize"
-				on:click={() => CategoryStoreService.setNewSelectedCategory(category)}
+			<BitoneButton
+				active={componentCategories?.selected?.id === category.id}
+				on:click={() => categoryStoreService.setNewSelectedCategory(category)}
 			>
-				<span class="whitespace-nowrap">
-					{category.name}
-				</span>
-			</Button>
+				{category.name}
+			</BitoneButton>
 		{/each}
 	</ButtonGroup>
 </div>
@@ -77,26 +68,20 @@
 <Modal bind:open={isModalOpen} size="xs" autoclose={false}>
 	<form
 		class="flex flex-col space-y-6"
-		method="post"
-		action="?/createCategory"
-		use:enhance={createCategory}
+		on:submit|preventDefault={createCategory}
 	>
 		<Label
 			class="text-xl font-medium text-gray-900 dark:text-white p-0 space-y-2"
 		>
 			<span> Add new category </span>
-			<Input
-				type="text"
-				name="category"
-				value={form?.formContent?.inputValue ?? ''}
-			/>
-			{#if form?.error}
+			<Input type="text" name="category" placeholder="write new name" />
+			{#if formError}
 				<Helper class="mt-2" color="red">
-					{form?.error?.message}
+					{formError}
 				</Helper>
 			{/if}
 		</Label>
 
-		<Button type="submit" class="w-full1">Save</Button>
+		<Button type="submit" class="w-full">Save</Button>
 	</form>
 </Modal>
