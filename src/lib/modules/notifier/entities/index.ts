@@ -1,6 +1,25 @@
 export type ToastrType = 'success' | 'info' | 'warning' | 'error';
 
-export const toastrColor = new Map<string, string>();
+export const toastrColor = new Map<
+	string,
+	| 'form'
+	| 'gray'
+	| 'red'
+	| 'yellow'
+	| 'green'
+	| 'indigo'
+	| 'default'
+	| 'purple'
+	| 'pink'
+	| 'blue'
+	| 'light'
+	| 'dark'
+	| 'dropdown'
+	| 'navbar'
+	| 'navbarUl'
+	| 'none'
+	| undefined
+>();
 
 toastrColor.set('success', 'green');
 
@@ -8,7 +27,7 @@ toastrColor.set('error', 'red');
 
 toastrColor.set('warning', 'yellow');
 
-toastrColor.set('info', '');
+toastrColor.set('info', 'blue');
 
 export interface IToastrParams {
 	title: string;
@@ -22,14 +41,48 @@ export class ToastrConfig {
 	public message: string;
 	public isShown: boolean;
 	public type: ToastrType;
-	public currentColor: string;
+	public currentColor:
+		| 'form'
+		| 'gray'
+		| 'red'
+		| 'yellow'
+		| 'green'
+		| 'indigo'
+		| 'default'
+		| 'purple'
+		| 'pink'
+		| 'blue'
+		| 'light'
+		| 'dark'
+		| 'dropdown'
+		| 'navbar'
+		| 'navbarUl'
+		| 'none'
+		| undefined;
 
 	private constructor(
 		title: string,
 		message: string,
 		isShown: boolean,
 		type: ToastrType,
-		color: string
+		color:
+			| 'form'
+			| 'gray'
+			| 'red'
+			| 'yellow'
+			| 'green'
+			| 'indigo'
+			| 'default'
+			| 'purple'
+			| 'pink'
+			| 'blue'
+			| 'light'
+			| 'dark'
+			| 'dropdown'
+			| 'navbar'
+			| 'navbarUl'
+			| 'none'
+			| undefined
 	) {
 		this.title = title;
 		this.message = message;
@@ -40,7 +93,7 @@ export class ToastrConfig {
 
 	public static create(params: IToastrParams): ToastrConfig {
 		const type = params.type ?? 'info';
-		const color = toastrColor.get(type) ?? 'info';
+		const color = toastrColor.get(type) ?? 'dark';
 
 		return new ToastrConfig(
 			params.title,

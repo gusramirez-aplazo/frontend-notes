@@ -2,6 +2,7 @@ import { toastr } from '$lib/modules/notifier/store/toastr';
 import { ToastrConfig } from '../entities';
 
 export type NotifierServiceType = {
+	notifier: typeof toastr;
 	closeToastr: () => void;
 	success: (title: string, message: string) => void;
 	error: (title: string, message: string) => void;
@@ -10,60 +11,48 @@ export type NotifierServiceType = {
 };
 
 class NotifierService implements NotifierServiceType {
-	private readonly _toastr = toastr;
+	private readonly _notifier = toastr;
+
+	public get notifier() {
+		return this._notifier;
+	}
 
 	public closeToastr(): void {
-		this._toastr.update((val) => {
-			const config = ToastrConfig.create({
-				title: val.title,
-				message: val.message,
-				isShown: false,
-				type: 'info'
-			});
-
-			return config;
-		});
+		this.setNotifier({ isShown: false });
 	}
 
 	public success(title: string, message: string): void {
-		const config = ToastrConfig.create({
-			title,
-			message,
-			isShown: true,
-			type: 'success'
-		});
-
-		this._toastr.set(config);
+		this.setNotifier({ type: 'success', title, message });
 	}
+
 	public error(title: string, message: string): void {
-		const config = ToastrConfig.create({
-			title,
-			message,
-			isShown: true,
-			type: 'error'
-		});
-
-		this._toastr.set(config);
+		this.setNotifier({ type: 'error', title, message });
 	}
+
 	public warning(title: string, message: string): void {
-		const config = ToastrConfig.create({
-			title,
-			message,
-			isShown: true,
-			type: 'warning'
-		});
-
-		this._toastr.set(config);
+		this.setNotifier({ type: 'warning', title, message });
 	}
-	public info(title: string, message: string): void {
-		const config = ToastrConfig.create({
-			title,
-			message,
-			isShown: true,
-			type: 'info'
-		});
 
-		this._toastr.set(config);
+	public info(title: string, message: string): void {
+		this.setNotifier({ type: 'info', title, message });
+	}
+
+	private setNotifier({
+		type = 'info',
+		title = '',
+		message = '',
+		isShown = true
+	}: Partial<ToastrConfig>): void {
+		const config = ToastrConfig.create(
+			ToastrConfig.create({
+				title,
+				message,
+				isShown,
+				type
+			})
+		);
+
+		this._notifier.set(config);
 	}
 }
 

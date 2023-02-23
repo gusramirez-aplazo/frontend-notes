@@ -21,7 +21,6 @@ export const createCategoryUsecase = (
 			const validatedName = name?.toString().trim().toLowerCase() ?? '';
 
 			if (!validatedName) {
-				notifier.error('Ups!', 'Category name is required');
 				throw new CustomRuntimeError(
 					ErrorCodes.noCategoryName,
 					ErrorStatus.badRequest,
