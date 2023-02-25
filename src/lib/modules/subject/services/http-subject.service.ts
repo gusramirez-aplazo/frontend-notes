@@ -8,11 +8,11 @@ import type { ApiResponse } from '../../../shared/entities/api-response';
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-export type CategoryHttpClientServiceType = {
+export type SubjectHttpClientServiceType = {
 	createOne: (name: string) => Promise<ApiResponse<BaseItemDetail>>;
 };
 
-const _categoryHttpClientService: CategoryHttpClientServiceType = {
+const _httpClientService: SubjectHttpClientServiceType = {
 	createOne: async function (
 		name: string
 	): Promise<ApiResponse<BaseItemDetail>> {
@@ -20,19 +20,19 @@ const _categoryHttpClientService: CategoryHttpClientServiceType = {
 			throw new CustomRuntimeError(
 				ErrorCodes.noBaseUrl,
 				ErrorStatus.emptyStatus,
-				'No Base Url for create category'
+				'No Base Url for create subject'
 			);
 		}
 
 		if (!name) {
 			throw new CustomRuntimeError(
-				ErrorCodes.noCategoryName,
+				ErrorCodes.noSubjectName,
 				ErrorStatus.emptyStatus,
-				'No Category Name for create category'
+				'No Field Name for create subject'
 			);
 		}
 
-		const fetchedResponse = await window.fetch(`${baseUrl}/api/v1/category`, {
+		const fetchedResponse = await window.fetch(`${baseUrl}/api/v1/subject`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
@@ -71,6 +71,4 @@ const _categoryHttpClientService: CategoryHttpClientServiceType = {
 	}
 };
 
-export const categoryHttpClientService = Object.freeze(
-	_categoryHttpClientService
-);
+export const subjectHttpClientService = Object.freeze(_httpClientService);

@@ -1,93 +1,70 @@
 <script lang="ts">
-	import { applyAction, enhance, type SubmitFunction } from '$app/forms';
-	import { Badge, Helper, Tooltip } from 'flowbite-svelte';
-	import { subjects } from '$lib/modules/subject/store/subjects';
+	import { Helper } from 'flowbite-svelte';
 	import { notifierService } from '$lib/modules/notifier/services/tostr-store.service';
-	import { SubjectStoreService } from '$lib/modules/subject/services/subject-store.service';
-	import CloseIcon from '$lib/shared/components/close-icon.svelte';
 
 	import type { BaseItemDetail } from '$lib/shared/entities/base-item-detail';
 	import type { SubjectStore } from '../entities';
-	import type { ActionData } from '../../../../routes/note/$types';
-
-	export let form: ActionData;
+	import { subjectStoreService } from '../services/subject-store.service';
+	import { createSubjectUsecase } from '../usecases/create-one.usecase';
+	import { subjectHttpClientService } from '../services/http-subject.service';
+	import CustomRemovableBadge from './custom-removable-badge.svelte';
 
 	let componentSubjects: SubjectStore;
-	let thisForm: HTMLFormElement;
+	let currentForm: HTMLFormElement;
+	let formError = '';
 
-	subjects.subscribe((value) => {
+	subjectStoreService.subjects.subscribe((value) => {
 		componentSubjects = value;
 	});
 
+	const createOneUsecase = createSubjectUsecase(
+		subjectHttpClientService,
+		subjectStoreService,
+		notifierService
+	);
+
 	const removeSubjectBadge = (subject: BaseItemDetail) => {
-		SubjectStoreService.removeSelectedSubject(subject);
+		subjectStoreService.removeSelection(subject);
 	};
 
-	const submitCreateSubject: SubmitFunction = ({ form, data }) => {
-		console.log(form);
-		return async ({ result, update }) => {
-			if (result.type === 'failure') {
-				await applyAction(result);
-			}
-
-			if (result.type === 'success') {
-				form.reset();
-				SubjectStoreService.setNewSelectedSubject(
-					result.data?.formContent.response
-				);
-				notifierService.success('Success!', 'Category created');
-			}
-
-			update();
-		};
-	};
+	function createOne(this: HTMLFormElement) {
+		createOneUsecase
+			.execute(this)
+			.then(() => {
+				formError = '';
+			})
+			.catch((error) => {
+				formError = error.message;
+			});
+	}
 </script>
 
-<form
-	bind:this={thisForm}
-	action="?/createSubject"
-	method="post"
-	use:enhance={submitCreateSubject}
->
+<form bind:this={currentForm} on:submit|preventDefault={createOne}>
 	<label
 		for="subject"
 		class="grid
-	grid-cols-[repeat(auto-fill,_minmax(100px,_1fr))]
-	gap-3
-	w-full
-	h-auto
-	items-center
-	justify-between
-	overflow-x-auto
-	py-4
-	px-6
-	mt-8
-	mb-6
-	rounded-lg
-	border-gray-500
-	border
-	border-solid"
+		grid-cols-[repeat(auto-fill,_minmax(100px,_1fr))]
+		gap-3
+		w-full
+		h-auto
+		items-center
+		justify-start
+		overflow-x-auto
+		py-4
+		px-6
+		mt-8
+		mb-6
+		rounded-lg
+		border-gray-500
+		border
+		border-solid"
 	>
 		{#each componentSubjects.selected as subject}
 			{#if subject}
-				<Badge border large color="green" class="subject-badge">
-					<p class="truncate">
-						{subject.name}
-					</p>
-
-					<button
-						on:click={() => removeSubjectBadge(subject)}
-						type="button"
-						class="inline-flex items-center p-0.5 ml-2 text-sm bg-transparent rounded-sm text-blue-400 hover:bg-blue-200 hover:text-blue-900 dark:hover:bg-blue-800 dark:hover:text-blue-300"
-						aria-label="Remove"
-					>
-						<CloseIcon />
-					</button>
-				</Badge>
-
-				<Tooltip triggeredBy=".subject-badge">
-					{subject.name}
-				</Tooltip>
+				<CustomRemovableBadge
+					{subject}
+					on:close={() => removeSubjectBadge(subject)}
+				/>
 			{/if}
 		{/each}
 
@@ -97,15 +74,14 @@
 			id="subject"
 			name="subject"
 			class="w-auto
-		 outline-none
-		 focus:ring-transparent
-		 border-none
-		 bg-transparent
-		 pr-4
-		 py-2"
+				outline-none
+				focus:ring-transparent
+				border-none
+				bg-transparent
+				pr-4
+				py-2"
 			autocomplete="off"
-			value={form?.formContent?.inputValue ?? ''}
-			on:change={() => thisForm.submit()}
+			on:change={() => createOne.apply(currentForm)}
 		/>
 	</label>
 
@@ -114,9 +90,9 @@
 			<option value={sub.name} />
 		{/each}
 	</datalist>
-	{#if form?.error}
+	{#if formError}
 		<Helper class="mt-2" color="red">
-			{form?.error?.message}
+			{formError}
 		</Helper>
 	{/if}
 </form>

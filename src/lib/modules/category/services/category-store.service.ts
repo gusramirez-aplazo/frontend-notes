@@ -5,7 +5,7 @@ import type { CategoryStore } from '../entities';
 
 export type CategoryStoreServiceType = {
 	categories: Writable<CategoryStore>;
-	setNewSelectedCategory: (category: BaseItemDetail) => void;
+	setNewSelection: (category: BaseItemDetail) => void;
 	setInitialLoad: (items: BaseItemDetail[]) => void;
 };
 
@@ -16,7 +16,7 @@ class CategoryStoreService implements CategoryStoreServiceType {
 		return this._categories;
 	}
 
-	public setNewSelectedCategory(category: BaseItemDetail): void {
+	public setNewSelection(category: BaseItemDetail): void {
 		this._categories.update((val) => {
 			const selected = category;
 			const retrieved = [...val.retrievedCategories];
@@ -51,13 +51,3 @@ class CategoryStoreService implements CategoryStoreServiceType {
 const _categoryStoreService = new CategoryStoreService();
 
 export const categoryStoreService = Object.freeze(_categoryStoreService);
-/**
- * custom runtime error
- * store service exposed variables and methods for category
- * deliver a contract for the store service
- * instead of do all the logic in the component do a usecase
- * and in there receive all the services that needs to be used
- * from within the component only call the usecase
- * and inject the dependencies
- *
- */

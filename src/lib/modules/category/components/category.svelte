@@ -57,7 +57,7 @@
 		{#each componentCategories.retrievedCategories as category}
 			<BitoneButton
 				active={componentCategories?.selected?.id === category.id}
-				on:click={() => categoryStoreService.setNewSelectedCategory(category)}
+				on:click={() => categoryStoreService.setNewSelection(category)}
 			>
 				{category.name}
 			</BitoneButton>
