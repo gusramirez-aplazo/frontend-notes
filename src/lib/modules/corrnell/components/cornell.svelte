@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { Button, TabItem, Tabs, Textarea } from 'flowbite-svelte';
+	import HorizontalPanel from '../../../shared/components/horizontal-panel.svelte';
 
 	const contentConfig = {
 		id: 'content',
@@ -36,17 +37,11 @@
 			name="title"
 		/>
 	</label>
+	<HorizontalPanel>
+		<Textarea {...cuesConfig} slot="left" />
 
-	<div>
-		<Tabs style="full">
-			<TabItem open title="Content">
-				<Textarea {...contentConfig} />
-			</TabItem>
-			<TabItem title="Cues">
-				<Textarea {...cuesConfig} />
-			</TabItem>
-		</Tabs>
-	</div>
+		<Textarea {...contentConfig} slot="right" />
+	</HorizontalPanel>
 
 	<div class="flex justify-end w-full">
 		<Button type="submit">Save Note</Button>
