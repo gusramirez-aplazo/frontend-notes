@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { notifierService } from '$lib/modules/notifier/services/tostr-store.service';
-
 	let resizer: HTMLDivElement;
 	let leftPanel: HTMLDivElement;
 	let rightPanel: HTMLDivElement;
@@ -66,7 +64,9 @@
 			((leftWidth + deltaX) * 100) /
 			resizer.parentElement.getBoundingClientRect().width;
 
-		leftPanel.style.width = `${newLeftWidth}%`;
+		leftPanel.style.width = `${
+			newLeftWidth <= 20 ? 20 : newLeftWidth >= 80 ? 80 : newLeftWidth
+		}%`;
 	}
 
 	function onPointerUp() {
@@ -95,13 +95,27 @@
 	</div>
 
 	<div
-		class="resizer w-1 h-full bg-slate-100"
+		class="
+		resizer mx-1 relative w-0.5 h-full bg-slate-800 dark:bg-slate-50"
 		bind:this={resizer}
 		on:mousedown={onPointerDown}
 		on:touchstart={onPointerDown}
 	/>
 
-	<div class="panel-rigth w-full flex-1" bind:this={rightPanel}>
+	<div class="panel-rigth flex-1" bind:this={rightPanel}>
 		<slot name="right" />
 	</div>
 </article>
+
+<style>
+	.resizer:hover::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(144, 240, 19, 0.9);
+		cursor: ew-resize;
+	}
+</style>

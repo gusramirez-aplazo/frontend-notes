@@ -1,47 +1,63 @@
 <script lang="ts">
-	import { Button, TabItem, Tabs, Textarea } from 'flowbite-svelte';
+	import AddIcon from '$lib/shared/components/add-icon.svelte';
+	import { Button } from 'flowbite-svelte';
 	import HorizontalPanel from '../../../shared/components/horizontal-panel.svelte';
 
-	const contentConfig = {
-		id: 'content',
-		name: 'content',
-		label: 'Your content',
-		rows: 3,
-		placeholder: 'Take your notes...'
-	};
-	const cuesConfig = {
-		id: 'cues',
-		name: 'cues',
-		label: 'Your cues',
-		rows: 3,
-		placeholder: 'Do you have any cues?'
-	};
-
+	let notes: any[] = [];
 	function createOne(this: HTMLFormElement) {
-		console.log(this);
+		// console.log(new FormData(this).getAll('cues'));
+		console.log(notes);
+	}
+
+	function addNote() {
+		notes = [
+			...notes,
+			{
+				cues: '',
+				note: ''
+			}
+		];
+	}
+
+	function handleChangeCue(e: Event, i: number) {
+		const el = e.target as HTMLTextAreaElement;
+		notes[i].cues = el.value || '';
+	}
+	function handleChangeNote(e: Event, i: number) {
+		const el = e.target as HTMLTextAreaElement;
+		notes[i].note = el.value || '';
 	}
 </script>
 
+<div class="flex justify-end pb-4">
+	<Button pill={true} class="!p-2" on:click={addNote}>
+		<AddIcon />
+	</Button>
+</div>
 <form class="grid grid-cols-1 gap-5" on:submit|preventDefault={createOne}>
-	<label for="title" class="flex bg-transparent w-full justify-center">
-		<input
-			class="outline-none
-				focus:ring-transparent
-				border-none
-				bg-transparent
-				py-2
-    "
-			type="text"
-			placeholder="Awesome title"
-			id="title"
-			name="title"
-		/>
-	</label>
-	<HorizontalPanel>
-		<Textarea {...cuesConfig} slot="left" />
+	{#each notes as note, i}
+		<HorizontalPanel>
+			<textarea
+				class="block w-full resize-none bg-transparent border-gray-300 dark:border-gray-600"
+				slot="left"
+				name="cues"
+				id={`cues-${i}`}
+				rows="5"
+				placeholder="Do you have any clues?"
+				on:change={(e) => handleChangeCue(e, i)}
+			/>
 
-		<Textarea {...contentConfig} slot="right" />
-	</HorizontalPanel>
+			<textarea
+				class="block w-full resize-none bg-transparent border-gray-300 dark:border-gray-600"
+				slot="right"
+				name="note"
+				id={`note-${i}`}
+				rows="5"
+				placeholder="Take your notes..."
+				on:change={(e) => handleChangeNote(e, i)}
+			/>
+		</HorizontalPanel>
+	{/each}
 
 	<div class="flex justify-end w-full">
 		<Button type="submit">Save Note</Button>
