@@ -96,7 +96,7 @@
 
 	<div
 		class="
-		resizer mx-1 relative w-0.5 h-full bg-slate-800 dark:bg-slate-50"
+		resizer mx-2 relative w-0.5 h-full bg-slate-800 dark:bg-slate-50"
 		bind:this={resizer}
 		on:mousedown={onPointerDown}
 		on:touchstart={onPointerDown}

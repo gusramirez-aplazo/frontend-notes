@@ -11,10 +11,12 @@ export class FormControl<Content> {
 	private _isTouched: boolean;
 	private _isValid: boolean;
 	private _errors: { [key: string]: string } | null;
+	private _keyToValidate: string;
 
-	constructor(name: string, value: Content) {
+	constructor(name: string, value: Content, keyToValidate = '') {
 		this.name = name;
 		this.value = value;
+		this._keyToValidate = keyToValidate;
 		this._isTouched = false;
 	}
 
@@ -70,11 +72,30 @@ export class FormControl<Content> {
 	}
 
 	private setIsValid(): void {
-		const validation =
-			typeof this.value !== 'undefined' &&
-			this.value !== null &&
-			((Array.isArray(this.value) && this.value.length > 0) ||
-				(typeof this.value === 'string' && this.value !== ''));
+		let validation = false;
+
+		if (typeof this.value === 'string' && this.value.length > 0) {
+			validation = true;
+		}
+
+		if (Array.isArray(this.value)) {
+			let isValid = false;
+
+			if (this.value.length > 0) {
+				isValid = this.value.every((item) => {
+					return (
+						typeof item[this._keyToValidate] !== 'undefined' &&
+						item[this._keyToValidate] !== null &&
+						item[this._keyToValidate] !== ''
+					);
+				});
+			}
+
+			validation = isValid;
+		}
+
+		this._isValid = validation;
+
 		if (!validation) {
 			this._errors = {
 				required: 'This field is required'
@@ -82,6 +103,5 @@ export class FormControl<Content> {
 		} else {
 			this._errors = null;
 		}
-		this._isValid = validation;
 	}
 }

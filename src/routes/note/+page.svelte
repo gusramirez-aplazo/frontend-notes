@@ -3,41 +3,51 @@
 
 	import { notifierService } from '$lib/modules/notifier/services/tostr-store.service';
 
+	import AddIcon from '$lib/shared/components/add-icon.svelte';
 	import Subject from '$lib/modules/subject/components/subject.svelte';
 	import Cornell from '$lib/modules/corrnell/components/cornell.svelte';
 	import NoteTitle from '$lib/modules/title/components/note-title.svelte';
 
-	import type { PageData } from './$types';
-	import type { CornellNote } from '$lib/modules/corrnell/entities';
-	import { cornellNoteStoreService } from '$lib/modules/corrnell/services/cornell-notes-store.service';
-	import NewEmptyCornell from '$lib/modules/corrnell/components/new-empty-cornell.svelte';
 	import { FormControl } from '$lib/shared/entities/form-control';
+	import { CornellNote } from '$lib/modules/corrnell/entities';
+
+	import type { PageData } from './$types';
 	import type { BaseItemDetail } from '$lib/shared/entities/base-item-detail';
 
 	export let data: PageData;
-	let cornellNotes: CornellNote[];
 	let retrievedSubjects: BaseItemDetail[];
 
 	let titleFormControl = new FormControl<string>('title', '');
 
 	let selectedSubjectsFormControl = new FormControl<BaseItemDetail[]>(
 		'selectedSubjects',
-		[]
+		[],
+		'name'
+	);
+
+	let notesFormControl = new FormControl<CornellNote[]>(
+		'notes',
+		[CornellNote.create('', '')],
+		'content'
 	);
 
 	$: retrievedSubjects = data.content;
-
-	cornellNoteStoreService.cornellNotes.subscribe((n) => (cornellNotes = n));
 
 	if (!data.success) {
 		notifierService.error('Ups!', "Can't retrieve subjects");
 	}
 
 	function saveCornellNote() {
-		// console.log({ subjects: subjects.selected });
-		// console.log({ cornellNotes });
 		titleFormControl = titleFormControl.markAsTouched();
 		selectedSubjectsFormControl = selectedSubjectsFormControl.markAsTouched();
+		notesFormControl = notesFormControl.markAsTouched();
+	}
+
+	function addEmptyNote() {
+		notesFormControl.value = [
+			...notesFormControl.value,
+			CornellNote.create('', '')
+		];
 	}
 </script>
 
@@ -52,13 +62,17 @@
 			on:submit|preventDefault={saveCornellNote}
 		>
 			<NoteTitle formControl={titleFormControl} />
-			<Subject bind:retrieved={data.content} {selectedSubjectsFormControl} />
-			<NewEmptyCornell />
-			<Cornell />
 
-			<div class="flex justify-end w-full">
-				<Button type="submit">Save Note</Button>
-			</div>
+			<Subject bind:retrieved={data.content} {selectedSubjectsFormControl} />
+
+			<Button type="button" outline class="w-full my-5" on:click={addEmptyNote}>
+				<span class="mx-3"> Add empty note </span>
+				<AddIcon />
+			</Button>
+
+			<Cornell {notesFormControl} />
+
+			<Button class="my-5" type="submit">Save Note</Button>
 		</form>
 	</Card>
 </main>
