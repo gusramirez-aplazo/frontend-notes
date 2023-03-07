@@ -5,20 +5,24 @@ import {
 } from '$lib/shared/infra/custom-runtime-error';
 import type { NotifierServiceType } from '../../notifier/services/tostr-store.service';
 import type { SubjectHttpClientServiceType } from '../services/http-subject.service';
-import type { SubjectStoreServiceType } from '../services/subject-store.service';
+import type { BaseItemDetail } from '../../../shared/entities/base-item-detail';
 
 export const createSubjectUsecase = (
 	httpClient: SubjectHttpClientServiceType,
-	storeService: SubjectStoreServiceType,
 	notifier: NotifierServiceType
 ) => {
 	return {
-		execute: async function (form: HTMLFormElement) {
-			const data = new FormData(form);
-
-			const name = data.get('subject');
-
-			const validatedName = name?.toString().trim().toLowerCase() ?? '';
+		execute: async function (
+			subject: string,
+			selectedSubjects: BaseItemDetail[],
+			retrivedSubjects: BaseItemDetail[]
+		): Promise<{
+			selected: BaseItemDetail[];
+			retrieved: BaseItemDetail[];
+		}> {
+			const validatedName = subject?.trim().toLowerCase() ?? '';
+			const newRetrievedItems = [...retrivedSubjects];
+			const newSelectedItems = [...selectedSubjects];
 
 			if (!validatedName) {
 				throw new CustomRuntimeError(
@@ -33,21 +37,33 @@ export const createSubjectUsecase = (
 
 				if (response.success) {
 					const item = response.content;
-					storeService.setNewSelection(item);
+					newSelectedItems.push(item);
 					notifier.success('Success', 'Subject created');
-					form.reset();
-					return;
+
+					return {
+						selected: newSelectedItems,
+						retrieved: newRetrievedItems
+					};
 				}
 
 				notifier.error('Ups!', response.message);
+				return {
+					selected: newSelectedItems,
+					retrieved: newRetrievedItems
+				};
 			} catch (error: unknown) {
-				const selection = storeService.getSelectedItemByName(validatedName);
+				const selection = newRetrievedItems.findIndex(
+					(item) => item.name.toLowerCase() === validatedName
+				);
 
-				if (selection) {
-					storeService.setNewSelection(selection);
+				if (selection >= 0) {
+					newSelectedItems.push(newRetrievedItems[selection]);
+					newRetrievedItems.splice(selection, 1);
 					notifier.info('Subject selected', '');
-					form.reset();
-					return;
+					return {
+						selected: newSelectedItems,
+						retrieved: newRetrievedItems
+					};
 				}
 
 				console.error(error);

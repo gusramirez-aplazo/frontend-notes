@@ -1,65 +1,66 @@
 <script lang="ts">
-	import AddIcon from '$lib/shared/components/add-icon.svelte';
-	import { Button } from 'flowbite-svelte';
-	import HorizontalPanel from '../../../shared/components/horizontal-panel.svelte';
+	import type { CornellNote } from '../entities';
+	import { cornellNoteStoreService } from '../services/cornell-notes-store.service';
+	import HorizontalPanel from '$lib/shared/components/horizontal-panel.svelte';
 
-	let notes: any[] = [];
-	function createOne(this: HTMLFormElement) {
-		// console.log(new FormData(this).getAll('cues'));
-		console.log(notes);
+	let notes: CornellNote[];
+
+	cornellNoteStoreService.cornellNotes.subscribe((n) => {
+		notes = n;
+	});
+
+	function removeNote(note: CornellNote) {
+		cornellNoteStoreService.removeNote(note);
 	}
 
-	function addNote() {
-		notes = [
-			...notes,
-			{
-				cues: '',
-				note: ''
-			}
-		];
+	function setCue(event: Event, note: CornellNote) {
+		const el = event.target as HTMLTextAreaElement;
+		note.cue = el?.value?.trim() || '';
+		cornellNoteStoreService.updateNote(note);
 	}
 
-	function handleChangeCue(e: Event, i: number) {
-		const el = e.target as HTMLTextAreaElement;
-		notes[i].cues = el.value || '';
-	}
-	function handleChangeNote(e: Event, i: number) {
-		const el = e.target as HTMLTextAreaElement;
-		notes[i].note = el.value || '';
+	function setNote(event: Event, note: CornellNote) {
+		const el = event.target as HTMLTextAreaElement;
+		note.content = el?.value?.trim() || '';
+		cornellNoteStoreService.updateNote(note);
 	}
 </script>
 
-<div class="flex justify-end pb-4">
-	<Button pill={true} class="!p-2" on:click={addNote}>
-		<AddIcon />
-	</Button>
-</div>
-<form class="grid grid-cols-1 gap-5" on:submit|preventDefault={createOne}>
-	{#each notes as note, i}
-		<HorizontalPanel>
-			<textarea
-				class="block w-full resize-none bg-transparent border-gray-300 dark:border-gray-600"
-				slot="left"
-				name="cues"
-				id={`cues-${i}`}
-				rows="5"
-				placeholder="Do you have any clues?"
-				on:change={(e) => handleChangeCue(e, i)}
-			/>
+{#each notes as note}
+	<HorizontalPanel>
+		<textarea
+			class="
+					block
+					w-full
+					resize-none
+					bg-transparent
+					border-gray-300
+					dark:border-gray-600
+				"
+			slot="left"
+			name="cue"
+			id={`cue-${note.id}`}
+			rows="5"
+			placeholder="Do you have any clues?"
+			on:change={(e) => setCue(e, note)}
+		/>
 
-			<textarea
-				class="block w-full resize-none bg-transparent border-gray-300 dark:border-gray-600"
-				slot="right"
-				name="note"
-				id={`note-${i}`}
-				rows="5"
-				placeholder="Take your notes..."
-				on:change={(e) => handleChangeNote(e, i)}
-			/>
-		</HorizontalPanel>
-	{/each}
-
-	<div class="flex justify-end w-full">
-		<Button type="submit">Save Note</Button>
-	</div>
-</form>
+		<textarea
+			class="
+					block
+					w-full
+					resize-none
+					bg-transparent
+					border-gray-300
+					dark:border-gray-600
+					"
+			slot="right"
+			name="note"
+			id={`note-${note.id}`}
+			rows="5"
+			placeholder="Take your notes..."
+			required
+			on:change={(e) => setNote(e, note)}
+		/>
+	</HorizontalPanel>
+{/each}

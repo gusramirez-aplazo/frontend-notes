@@ -90,7 +90,7 @@
 </script>
 
 <article class="container flex w-full">
-	<div class="panel-left" bind:this={leftPanel}>
+	<div class="panel-left w-28" bind:this={leftPanel}>
 		<slot name="left" />
 	</div>
 
