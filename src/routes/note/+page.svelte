@@ -5,11 +5,11 @@
 
 	import AddIcon from '$lib/shared/components/add-icon.svelte';
 	import Subject from '$lib/modules/subject/components/subject.svelte';
-	import Cornell from '$lib/modules/corrnell/components/cornell.svelte';
+	import AppNote from '$lib/modules/notes/components/note.svelte';
 	import NoteTitle from '$lib/modules/title/components/note-title.svelte';
 
 	import { FormControl } from '$lib/shared/entities/form-control';
-	import { CornellNote } from '$lib/modules/corrnell/entities';
+	import { Note } from '$lib/modules/notes/entities';
 
 	import type { PageData } from './$types';
 	import type { BaseItemDetail } from '$lib/shared/entities/base-item-detail';
@@ -25,9 +25,9 @@
 		'name'
 	);
 
-	let notesFormControl = new FormControl<CornellNote[]>(
+	let notesFormControl = new FormControl<Note[]>(
 		'notes',
-		[CornellNote.create('', '')],
+		[Note.create('', '')],
 		'content'
 	);
 
@@ -44,10 +44,7 @@
 	}
 
 	function addEmptyNote() {
-		notesFormControl.value = [
-			...notesFormControl.value,
-			CornellNote.create('', '')
-		];
+		notesFormControl.value = [...notesFormControl.value, Note.create('', '')];
 	}
 </script>
 
@@ -63,14 +60,17 @@
 		>
 			<NoteTitle formControl={titleFormControl} />
 
-			<Subject bind:retrieved={data.content} {selectedSubjectsFormControl} />
+			<Subject
+				bind:retrieved={data.content}
+				formControl={selectedSubjectsFormControl}
+			/>
 
 			<Button type="button" outline class="w-full my-5" on:click={addEmptyNote}>
 				<span class="mx-3"> Add empty note </span>
 				<AddIcon />
 			</Button>
 
-			<Cornell {notesFormControl} />
+			<AppNote formControl={notesFormControl} />
 
 			<Button class="my-5" type="submit">Save Note</Button>
 		</form>

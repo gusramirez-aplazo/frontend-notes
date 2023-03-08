@@ -2,32 +2,30 @@
 	import HorizontalPanel from '$lib/shared/components/horizontal-panel.svelte';
 
 	import type { FormControl } from '$lib/shared/entities/form-control';
-	import type { CornellNote } from '../entities';
+	import type { Note } from '../entities';
 	import { Button, Helper } from 'flowbite-svelte';
 	import RemoveIcon from '$lib/shared/components/remove-icon.svelte';
 
-	export let notesFormControl: FormControl<CornellNote[]>;
+	export let formControl: FormControl<Note[]>;
 
-	function removeNote(note: CornellNote) {
-		notesFormControl.value = notesFormControl.value.filter(
-			(n) => n.id !== note.id
-		);
+	function removeNote(note: Note) {
+		formControl.value = formControl.value.filter((n) => n.id !== note.id);
 	}
 
-	function setCue(event: Event, note: CornellNote) {
+	function setCue(event: Event, note: Note) {
 		const el = event.target as HTMLTextAreaElement;
 		note.cue = el?.value?.trim() || '';
-		const refNote = notesFormControl.value.find((n) => n.id === note.id);
+		const refNote = formControl.value.find((n) => n.id === note.id);
 
 		if (refNote) {
 			refNote.cue = note.cue;
 		}
 	}
 
-	function setNote(event: Event, note: CornellNote) {
+	function setContent(event: Event, note: Note) {
 		const el = event.target as HTMLTextAreaElement;
 		note.content = el?.value?.trim() || '';
-		const refNote = notesFormControl.value.find((n) => n.id === note.id);
+		const refNote = formControl.value.find((n) => n.id === note.id);
 
 		if (refNote) {
 			refNote.content = note.content;
@@ -36,11 +34,11 @@
 </script>
 
 <div
-	class={notesFormControl.isTouched && !notesFormControl.isValid
+	class={formControl.isTouched && !formControl.isValid
 		? 'flex flex-col gap-10 w-full p-3 border border-red-500 rounded-md empty:hidden'
 		: 'flex flex-col gap-10 w-full p-3 border border-slate-200 rounded-md empty:hidden'}
 >
-	{#each notesFormControl.value as note}
+	{#each formControl.value as note}
 		<div class="flex w-full relative">
 			<Button
 				outline
@@ -90,15 +88,15 @@
 					id={`note-${note.id}`}
 					rows="8"
 					placeholder="Take your notes..."
-					on:change={(e) => setNote(e, note)}
+					on:change={(e) => setContent(e, note)}
 				/>
 			</HorizontalPanel>
 		</div>
 	{/each}
 </div>
-{#if notesFormControl.value.length && notesFormControl.isTouched && notesFormControl.errors}
+{#if formControl.value.length && formControl.isTouched && formControl.errors}
 	<Helper class="mt-0" color="red">Some content within a note are empty</Helper>
-{:else if !notesFormControl.value.length}
+{:else if !formControl.value.length}
 	<div class="flex justify-center">
 		<h3 class="text-red-500">Notes are required</h3>
 	</div>

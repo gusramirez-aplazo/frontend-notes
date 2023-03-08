@@ -10,7 +10,7 @@
 	import CustomRemovableBadge from './custom-removable-badge.svelte';
 
 	export let retrieved: BaseItemDetail[];
-	export let selectedSubjectsFormControl: FormControl<BaseItemDetail[]>;
+	export let formControl: FormControl<BaseItemDetail[]>;
 
 	const createOneUsecase = createSubjectUsecase(
 		subjectHttpClientService,
@@ -18,10 +18,9 @@
 	);
 
 	const removeSubjectBadge = (subject: BaseItemDetail) => {
-		selectedSubjectsFormControl.value =
-			selectedSubjectsFormControl.value.filter(
-				(item) => item.id !== subject.id
-			);
+		formControl.value = formControl.value.filter(
+			(item) => item.id !== subject.id
+		);
 		retrieved = [...retrieved, subject];
 	};
 
@@ -32,9 +31,9 @@
 		}
 
 		createOneUsecase
-			.execute(el.value, selectedSubjectsFormControl.value, retrieved)
+			.execute(el.value, formControl.value, retrieved)
 			.then((data) => {
-				selectedSubjectsFormControl.value = data.selected;
+				formControl.value = data.selected;
 				retrieved = data.retrieved;
 				el.value = '';
 			})
@@ -67,10 +66,9 @@
 		focus-within:border-blue-600
 		dark:focus-within:border-blue-400
 		"
-	class:border-red-500={selectedSubjectsFormControl.isTouched &&
-		!selectedSubjectsFormControl.isValid}
+	class:border-red-500={formControl.isTouched && !formControl.isValid}
 >
-	{#each selectedSubjectsFormControl.value as subject}
+	{#each formControl.value as subject}
 		{#if subject}
 			<CustomRemovableBadge
 				{subject}
@@ -95,9 +93,9 @@
 		on:change={createOne}
 	/>
 </label>
-{#if selectedSubjectsFormControl.isTouched && selectedSubjectsFormControl.errors}
+{#if formControl.isTouched && formControl.errors}
 	<Helper class="mt-[-2rem]" color="red">
-		{selectedSubjectsFormControl.errors.required}
+		{formControl.errors.required}
 	</Helper>
 {/if}
 

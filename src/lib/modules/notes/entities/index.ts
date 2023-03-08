@@ -1,6 +1,6 @@
 import { nanoid } from 'nanoid';
 
-export class CornellNote {
+export class Note {
 	public cue: string;
 	public content: string;
 	public id: string;
@@ -11,8 +11,8 @@ export class CornellNote {
 		this.id = id;
 	}
 
-	public static create(cue: string, content: string): CornellNote {
+	public static create(cue: string, content: string): Note {
 		const id = nanoid();
-		return new CornellNote(cue, content, id);
+		return new Note(cue, content, id);
 	}
 }
