@@ -13,6 +13,8 @@
 
 	import type { PageData } from './$types';
 	import type { BaseItemDetail } from '$lib/shared/entities/base-item-detail';
+	import { createCornellNoteUsecase } from '$lib/modules/cornell/usecases/create-one.usecase';
+	import { cornellHttpClientService } from '$lib/modules/cornell/services/http-cornell.service';
 
 	export let data: PageData;
 	let retrievedSubjects: BaseItemDetail[];
@@ -37,10 +39,43 @@
 		notifierService.error('Ups!', "Can't retrieve subjects");
 	}
 
+	const usecase = createCornellNoteUsecase(
+		cornellHttpClientService,
+		notifierService
+	);
+
 	function saveCornellNote() {
 		titleFormControl = titleFormControl.markAsTouched();
 		selectedSubjectsFormControl = selectedSubjectsFormControl.markAsTouched();
 		notesFormControl = notesFormControl.markAsTouched();
+
+		if (
+			!titleFormControl.isValid ||
+			!selectedSubjectsFormControl.isValid ||
+			!notesFormControl.isValid
+		) {
+			return;
+		}
+
+		usecase
+			.execute(
+				titleFormControl.value,
+				selectedSubjectsFormControl.value,
+				notesFormControl.value
+			)
+			.then((r) => {
+				console.log(r);
+				retrievedSubjects = [
+					...retrievedSubjects,
+					...selectedSubjectsFormControl.value
+				];
+				titleFormControl.reset();
+				selectedSubjectsFormControl.reset();
+				notesFormControl.reset();
+			})
+			.catch((e) => {
+				console.log(e);
+			});
 	}
 
 	function addEmptyNote() {
