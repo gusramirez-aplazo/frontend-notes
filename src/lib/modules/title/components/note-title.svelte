@@ -3,11 +3,6 @@
 	import { Helper } from 'flowbite-svelte';
 
 	export let formControl: FormControl<string>;
-
-	function setTitle(event: Event) {
-		const target = event.target as HTMLInputElement;
-		formControl.value = target.value;
-	}
 </script>
 
 <label for="title" class="flex bg-transparent w-full justify-center mb-2">
@@ -25,7 +20,7 @@
 		placeholder="Title here ..."
 		id="title"
 		name="title"
-		on:input={setTitle}
+		bind:value={formControl.value}
 	/>
 </label>
 {#if formControl.isTouched && formControl.errors}

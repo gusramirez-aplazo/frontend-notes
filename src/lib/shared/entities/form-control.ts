@@ -55,11 +55,12 @@ export class FormControl<Content> {
 		this._errors = errors;
 	}
 
-	public reset(): void {
-		this._value = null;
+	public reset(initialValue: Content) {
+		this.value = initialValue;
 		this._isTouched = false;
 		this._isValid = false;
 		this._errors = null;
+		return this;
 	}
 
 	public getEvent(): FormControlEvent<Content> {

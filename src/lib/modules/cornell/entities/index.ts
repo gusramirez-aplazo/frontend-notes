@@ -12,6 +12,7 @@ export interface CornellNoteRequestDto {
 	notes: Array<{
 		cue: string;
 		content: string;
+		id: string;
 	}>;
 }
 
@@ -20,3 +21,10 @@ export type CornellNoteResponseDto = ApiResponse<{
 	subjects: Array<BaseItemDetail>;
 	notes: Array<Omit<BaseItemDetail, 'name'> & { cue: string; content: string }>;
 }>;
+
+export interface CornellNoteContentUIDto {
+	title: string;
+	subjects: Array<BaseItemDetail>;
+	selectedSubjects: Array<BaseItemDetail>;
+	notes: Array<{ cue: string; content: string }>;
+}
