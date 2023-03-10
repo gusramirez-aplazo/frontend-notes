@@ -13,11 +13,16 @@ export type NotifierServiceType = {
 class NotifierService implements NotifierServiceType {
 	private readonly _notifier = toastr;
 
+	private counterId: any;
+
 	public get notifier() {
 		return this._notifier;
 	}
 
 	public closeToastr(): void {
+		if (this.counterId) {
+			globalThis.clearTimeout(this.counterId);
+		}
 		this.setNotifier({ isShown: false });
 	}
 
@@ -43,14 +48,20 @@ class NotifierService implements NotifierServiceType {
 		message = '',
 		isShown = true
 	}: Partial<ToastrConfig>): void {
-		const config = ToastrConfig.create(
-			ToastrConfig.create({
-				title,
-				message,
-				isShown,
-				type
-			})
-		);
+		if (this.counterId) {
+			globalThis.clearTimeout(this.counterId);
+		}
+
+		const config = ToastrConfig.create({
+			title,
+			message,
+			isShown,
+			type
+		});
+
+		this.counterId = globalThis.setTimeout(() => {
+			this.closeToastr();
+		}, 4000);
 
 		this._notifier.set(config);
 	}

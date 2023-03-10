@@ -1,10 +1,3 @@
-export type FormControlEvent<Content> = {
-	value: Content;
-	isTouched: boolean;
-	isValid: boolean;
-	errors: { [key: string]: string } | null;
-};
-
 export class FormControl<Content> {
 	name: string;
 	private _value: Content | null;
@@ -61,15 +54,6 @@ export class FormControl<Content> {
 		this._isValid = false;
 		this._errors = null;
 		return this;
-	}
-
-	public getEvent(): FormControlEvent<Content> {
-		return {
-			value: this.value,
-			isTouched: this.isTouched,
-			isValid: this.isValid,
-			errors: this.errors
-		};
 	}
 
 	private setIsValid(): void {
