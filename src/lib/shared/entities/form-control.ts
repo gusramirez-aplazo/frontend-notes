@@ -61,9 +61,7 @@ export class FormControl<Content> {
 
 		if (typeof this.value === 'string' && this.value.length > 0) {
 			validation = true;
-		}
-
-		if (Array.isArray(this.value)) {
+		} else if (Array.isArray(this.value)) {
 			let isValid = false;
 
 			if (this.value.length > 0) {
@@ -77,6 +75,13 @@ export class FormControl<Content> {
 			}
 
 			validation = isValid;
+		} else if (
+			typeof this.value === 'object' &&
+			this.value !== null &&
+			'content' in this.value &&
+			typeof this.value.content === 'string'
+		) {
+			validation = this.value.content.length > 0;
 		}
 
 		this._isValid = validation;

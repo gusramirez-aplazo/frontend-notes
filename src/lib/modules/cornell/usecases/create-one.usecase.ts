@@ -40,7 +40,7 @@ export const createCornellNoteUsecase = (
 				const response = await httpClient.createOne({
 					topic: { name: validatedTopic },
 					subjects,
-					notes: notes.map((note) => ({ cue: note.cue, content: note.content }))
+					notes
 				});
 
 				if (response.success) {

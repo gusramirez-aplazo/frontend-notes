@@ -43,19 +43,22 @@
 	}
 </script>
 
-<label
-	for="subject"
-	class="grid
-		grid-cols-[repeat(auto-fill,_minmax(100px,_1fr))]
-		gap-3
-		w-full
-		h-auto
-		items-center
-		justify-start
-		overflow-x-auto
-		py-4
-		px-6
-		mt-8
+<div class="flex w-full relative flex-col mt-8">
+	<span class="absolute left-0 top-[-1.1rem] text-xs">
+		Add tags to your note
+	</span>
+	<label
+		for="subject"
+		class="grid
+	grid-cols-[repeat(auto-fill,_minmax(100px,_1fr))]
+	gap-3
+	w-full
+	h-auto
+	items-center
+	justify-start
+	overflow-x-auto
+	py-4
+	px-6
 		mb-6
 		rounded-lg
 		border-gray-500
@@ -66,33 +69,34 @@
 		focus-within:border-blue-600
 		dark:focus-within:border-blue-400
 		"
-	class:border-red-500={formControl.isTouched && !formControl.isValid}
->
-	{#each formControl.value as subject}
-		{#if subject}
-			<CustomRemovableBadge
-				{subject}
-				on:close={() => removeSubjectBadge(subject)}
-			/>
-		{/if}
-	{/each}
+		class:border-red-500={formControl.isTouched && !formControl.isValid}
+	>
+		{#each formControl.value as subject}
+			{#if subject}
+				<CustomRemovableBadge
+					{subject}
+					on:close={() => removeSubjectBadge(subject)}
+				/>
+			{/if}
+		{/each}
 
-	<input
-		list="subject-datalist"
-		type="text"
-		id="subject"
-		name="subject"
-		class="w-auto
+		<input
+			list="subject-datalist"
+			type="text"
+			id="subject"
+			name="subject"
+			class="w-auto
 				outline-none
 				focus:ring-transparent
 				border-none
 				bg-transparent
 				pr-4
 				py-2"
-		autocomplete="off"
-		on:change={createOne}
-	/>
-</label>
+			autocomplete="off"
+			on:change={createOne}
+		/>
+	</label>
+</div>
 {#if formControl.isTouched && formControl.errors}
 	<Helper class="mt-[-2rem]" color="red">
 		{formControl.errors.required}

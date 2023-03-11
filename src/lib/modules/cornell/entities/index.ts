@@ -12,7 +12,6 @@ export interface CornellNoteRequestDto {
 	notes: Array<{
 		cue: string;
 		content: string;
-		id: string;
 	}>;
 }
 

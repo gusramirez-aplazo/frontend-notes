@@ -28,20 +28,9 @@
 	);
 
 	function saveCornellNote(content: CustomEvent<CornellNoteContentUIDto>) {
-		console.log(content);
+		const { title, selectedSubjects, notes } = content.detail;
 
-		// usecase
-		// 	.execute(
-		// 		titleFormControl.value,
-		// 		selectedSubjectsFormControl.value,
-		// 		notesFormControl.value
-		// 	)
-		// 	.then((r) => {
-		// 		console.log(r);
-		// })
-		// .catch((e) => {
-		// 	console.log(e);
-		// });
+		usecase.execute(title, selectedSubjects, notes);
 	}
 </script>
 

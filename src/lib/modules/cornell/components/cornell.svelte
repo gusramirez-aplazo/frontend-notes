@@ -8,7 +8,9 @@
 	import AddIcon from '$lib/shared/components/add-icon.svelte';
 
 	import { Note } from '$lib/modules/notes/entities';
+	import { FormArray } from '$lib/shared/entities/form-array';
 	import { FormControl } from '$lib/shared/entities/form-control';
+
 	import type { BaseItemDetail } from '$lib/shared/entities/base-item-detail';
 	import type { CornellNoteContentUIDto } from '../entities';
 
@@ -29,33 +31,38 @@
 		'name'
 	);
 
-	let notesFormControl = new FormControl<Note[]>(
-		'notes',
-		[Note.create('', '')],
-		'content'
-	);
+	let notesFormArray = new FormArray<Note>('notes', [
+		new FormControl('note', Note.create('', ''), 'content')
+	]);
 
 	function addEmptyNote() {
-		notesFormControl.value = [...notesFormControl.value, Note.create('', '')];
+		notesFormArray.value = [
+			...notesFormArray.value,
+			new FormControl('note', Note.create('', ''))
+		];
 	}
 
 	function saveCornellNote() {
 		titleFormControl = titleFormControl.markAsTouched();
 		selectedSubjectsFormControl = selectedSubjectsFormControl.markAsTouched();
-		notesFormControl = notesFormControl.markAsTouched();
+		notesFormArray = notesFormArray.markAllAsTouched();
 
 		if (
 			!titleFormControl.isValid ||
 			!selectedSubjectsFormControl.isValid ||
-			!notesFormControl.isValid
+			!notesFormArray.isValid
 		) {
 			return;
 		}
+
 		dispatcher('submit', {
 			title: titleFormControl.value,
 			subjects: cornellNoteContent.subjects,
 			selectedSubjects: selectedSubjectsFormControl.value,
-			notes: notesFormControl.value
+			notes: notesFormArray.value.map((note) => ({
+				content: note.value.content,
+				cue: note.value.cue
+			}))
 		});
 
 		cornellNoteContent.subjects = Array.from(
@@ -66,7 +73,9 @@
 		);
 		titleFormControl = titleFormControl.reset('');
 		selectedSubjectsFormControl = selectedSubjectsFormControl.reset([]);
-		notesFormControl = notesFormControl.reset([]);
+		notesFormArray = notesFormArray.reset([
+			new FormControl('note', Note.create('', ''))
+		]);
 	}
 </script>
 
@@ -83,12 +92,12 @@
 				formControl={selectedSubjectsFormControl}
 			/>
 
-			<Button type="button" outline class="w-full my-5" on:click={addEmptyNote}>
+			<Button type="button" outline class="w-full mb-8" on:click={addEmptyNote}>
 				<span class="mx-3"> Add empty note </span>
 				<AddIcon />
 			</Button>
 
-			<AppNote formControl={notesFormControl} />
+			<AppNote formArray={notesFormArray} />
 
 			<Button class="my-5" type="submit">Save Note</Button>
 		</form>
